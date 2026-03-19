@@ -271,7 +271,7 @@ mg24-hal/
 | Peripheral | Status | Notes |
 |---|---|---|
 | GPIO Output | ✅ Working | set_high, set_low, toggle |
-| GPIO Input  | 🔄 In Progress | floating, pull-up, pull-down |
+| GPIO Input  | ✅ Working | floating, pull-up, pull-down |
 | Clock (CMU) | ✅ Working | GPIO clock, peripheral clock |
 | Delay       | ⏳ Planned | cortex_m::asm::delay backed |
 
