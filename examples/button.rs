@@ -3,7 +3,7 @@
 
 use cortex_m_rt::entry;
 use mg24_hal::hal::clocks::clock::Clock;
-use mg24_hal::hal::gpio::delay_bare_metal::DelayBareMetal;
+use mg24_hal::hal::gpio::inputgpio::{InputPin, Pull};
 use mg24_hal::hal::gpio::outputgpio::OutputPin;
 use mg24_hal::hal::pac::Prehirpals;
 use panic_halt as _;
@@ -12,11 +12,13 @@ use panic_halt as _;
 fn main() -> ! {
     Clock::start();
     let dp = Prehirpals::take();
-    let led = OutputPin::new(dp.pins.on_board_led);
+    let led = OutputPin::new(dp.pins.d1);
+    let button = InputPin::new(dp.pins.d3, Pull::Up);
     loop {
-        led.write_high();
-        DelayBareMetal::delay_ms(500);
-        led.write_low();
-        DelayBareMetal::delay_ms(500);
+        if button.read_low() {
+            led.write_high();
+        } else {
+            led.write_low();
+        }
     }
 }

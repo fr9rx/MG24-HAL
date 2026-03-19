@@ -13,5 +13,9 @@ panic-halt = "1.0.0"
 name = "blink"
 path = "examples/blink.rs"
 
+[[example]]
+name = "button"
+path = "examples/button.rs"
+
 [build-dependencies]
 cc = "1.2.57"
