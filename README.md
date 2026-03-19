@@ -45,13 +45,3 @@ led.toggle();
 ```
 
 ## License
-
-Licensed under MIT OR Apache-2.0 at your option.
-```
-
----
-
-## GitHub Topics To Add
-```
-rust embedded hal efr32mg24 silicon-labs cortex-m no-std 
-embedded-hal xiao-mg24 emlib matter zigbee ble
