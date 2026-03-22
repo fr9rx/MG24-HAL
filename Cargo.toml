@@ -17,5 +17,9 @@ path = "examples/blink.rs"
 name = "button"
 path = "examples/button.rs"
 
+[[example]]
+name = "led_fade"
+path = "examples/led_fade.rs"
+
 [build-dependencies]
 cc = "1.2.57"

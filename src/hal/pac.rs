@@ -1,5 +1,7 @@
 use core::sync::atomic::{AtomicBool, Ordering};
 
+use crate::ffi::cmu;
+
 static TAKEN: AtomicBool = AtomicBool::new(false);
 
 pub struct Pins {
@@ -34,6 +36,13 @@ impl Prehirpals {
         if TAKEN.swap(true, Ordering::Relaxed) {
             panic!("Prehirpals already taken");
         }
+
+        unsafe {
+            if cmu::cmu_wrap_init_78mhz() == 0 {
+                panic!("Failed to initialize core clock to 78 MHz");
+            }
+        }
+
         Self {
             pins: Pins {
                 d0: ('C', 0),

@@ -7,22 +7,22 @@ fn main() {
     println!("cargo:rerun-if-changed=wrapper/");
 
     cc::Build::new()
-        // ── compiler ──────────────────────────────────────────────────
-        .compiler("arm-none-eabi-gcc") // swap to "clang" if using clang
-        // ── your wrapper files ────────────────────────────────────────
+        .compiler("arm-none-eabi-gcc")
         .file("wrapper/gpio_wrap.c")
         .file("wrapper/cmu_wrap.c")
+        .file("wrapper/system_clock_stubs.c")
         .file("wrapper/emlib/src/em_gpio.c")
         .file("wrapper/emlib/src/em_cmu.c")
-        // ── include paths — order matters ─────────────────────────────
+        .file("wrapper/emlib/src/em_core.c")
+        .file("wrapper/emlib/src/em_emu.c")
+        .file("wrapper/emlib/src/em_timer.c")
+        .file("wrapper/emlib/src/em_pwm.c")
         .include("wrapper")
         .include("wrapper/emlib/inc")
         .include("wrapper/CMSIS/Core/Include")
         .include("wrapper/device/EFR32MG24/Include")
-        // ── chip define ───────────────────────────────────────────────
+        .include("common/inc")
         .define("EFR32MG24B220F1536IM48", None)
-        // ── cortex-m33 flags ──────────────────────────────────────────
-        .flag("-mcpu=cortex-m33")
         .flag("-mthumb")
         .flag("-mfpu=fpv5-sp-d16")
         .flag("-mfloat-abi=hard")
@@ -31,10 +31,8 @@ fn main() {
         .flag("-fdata-sections")
         .flag("-fno-exceptions")
         .flag("-fno-unwind-tables")
-        // ── silence warnings from emlib we don't control ──────────────
         .flag_if_supported("-Wno-unused-parameter")
         .flag_if_supported("-Wno-sign-compare")
         .flag_if_supported("-Wno-unused-function")
-        // ── output library name ───────────────────────────────────────
         .compile("emlib_wrap");
 }

@@ -1,37 +1,35 @@
 /***************************************************************************//**
  * @file
- * @brief Assign correct part number for include file
- * @author Energy Micro AS
- * @version 3.20.0
+ * @brief CMSIS and EMLIB versions
  *******************************************************************************
- * @section License
- * <b>(C) Copyright 2012 Energy Micro AS, http://www.energymicro.com</b>
+ * # License
+ * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
  *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
  * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software.
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * DISCLAIMER OF WARRANTY/LIMITATION OF REMEDIES: Energy Micro AS has no
- * obligation to support this Software. Energy Micro AS is providing the
- * Software "AS IS", with no express or implied warranties of any kind,
- * including, but not limited to, any implied warranties of merchantability
- * or fitness for any particular purpose or warranties against infringement
- * of any proprietary rights of a third party.
- *
- * Energy Micro AS will not be liable for any consequential, incidental, or
- * special damages, or any other relief, or for any claim by any third party,
- * arising from your use of this Software.
- *
  ******************************************************************************/
-#ifndef __EM_VERSION_H
-#define __EM_VERSION_H
+
+#ifndef EM_VERSION_H
+#define EM_VERSION_H
 
 #include "em_device.h"
 
@@ -40,29 +38,31 @@ extern "C" {
 #endif
 
 /***************************************************************************//**
- * @addtogroup EM_Library
+ * @addtogroup version VERSION - Version Defines
+ * @brief Version API
+ * @details
+ *  Macros specifying the EMLIB and CMSIS version.
  * @{
  ******************************************************************************/
 
-/***************************************************************************//**
- * @addtogroup Version
- * @{
- ******************************************************************************/
+/* *INDENT-OFF* */
+/** Version number of targeted CMSIS package. */
+#define _CMSIS_VERSION 5.8.0
+/* *INDENT-ON* */
 
-/** Version number of emlib peripheral API */
-#define _EMLIB_VERSION 3.20.0
-/** Major version of emlib */
-#define _EMLIB_VERSION_MAJOR 3
-/** Minor version of emlib */
-#define _EMLIB_VERSION_MINOR 20
-/** Patch revision of emlib */
-#define _EMLIB_VERSION_PATCH 0
+/** Major version of CMSIS. */
+#define _CMSIS_VERSION_MAJOR 5
 
-/** @} (end addtogroup Version) */
-/** @} (end addtogroup EM_Library) */
+/** Minor version of CMSIS. */
+#define _CMSIS_VERSION_MINOR 8
+
+/** Patch revision of CMSIS. */
+#define _CMSIS_VERSION_PATCH 0
+
+/** @} (end addtogroup version) */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __EM_VERSION_H */
+#endif /* EM_VERSION_H */
