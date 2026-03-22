@@ -286,7 +286,7 @@ mg24-hal/
 | Peripheral | Status | Notes |
 |---|---|---|
 | ADC (IADC)   | ⏳ Planned | |
-| PWM (TIMER)  | ⏳ Planned | |
+| PWM (TIMER)  | ✅ Working | not tested cause the board bricked |
 | RTC          | ⏳ Planned | |
 | DMA          | ⏳ Planned | |
 | Low Power    | ⏳ Planned | EM1/EM2/EM3 sleep modes |
