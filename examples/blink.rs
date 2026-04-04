@@ -2,19 +2,20 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use mg24_hal::hal::gpio::delay_bare_metal::DelayBareMetal;
-use mg24_hal::hal::gpio::outputgpio::OutputPin;
+use embedded_hal::digital::OutputPin;
+use mg24_hal::hal::gpio::delay_bare_metal::delay_ms;
+use mg24_hal::hal::gpio::pindriver::PinDriver;
 use mg24_hal::hal::pac::Prehirpals;
 use panic_halt as _;
 
 #[entry]
 fn main() -> ! {
-    let dp = Prehirpals::take();
-    let led = OutputPin::new(dp.pins.d1);
+    let dp = Prehirpals::take().unwrap();
+    let mut led = PinDriver::output(dp.pins.GPIO1).unwrap();
     loop {
-        led.write_high();
-        DelayBareMetal::delay_ms(500);
-        led.write_low();
-        DelayBareMetal::delay_ms(500);
+        led.write_high().unwrap();
+        delay_ms(500);
+        led.set_low().unwrap();
+        delay_ms(500);
     }
 }

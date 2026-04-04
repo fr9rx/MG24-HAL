@@ -2,21 +2,21 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use mg24_hal::hal::gpio::inputgpio::{InputPin, Pull};
-use mg24_hal::hal::gpio::outputgpio::OutputPin;
+use mg24_hal::hal::gpio::pindriver::{InputConfig, PinDriver, Pull};
 use mg24_hal::hal::pac::Prehirpals;
 use panic_halt as _;
 
 #[entry]
 fn main() -> ! {
-    let dp = Prehirpals::take();
-    let led = OutputPin::new(dp.pins.d1);
-    let button = InputPin::new(dp.pins.d3, Pull::Up);
+    let dp = Prehirpals::take().unwrap();
+    let mut led = PinDriver::output(dp.pins.GPIO1).unwrap();
+    let config = InputConfig::new(Pull::Up);
+    let mut button = PinDriver::input(dp.pins.GPIO3, config).unwrap();
     loop {
-        if button.read_low() {
-            led.write_high();
+        if button.read().unwrap() == false {
+            led.write_high().unwrap();
         } else {
-            led.write_low();
+            led.write_low().unwrap();
         }
     }
 }

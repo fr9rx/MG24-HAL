@@ -1,30 +1,38 @@
+use crate::ffi::cmu;
+use crate::hal::pin::Pin;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use crate::ffi::cmu;
+#[derive(Debug)]
+pub enum PrephipalsErros {
+    AlreadyTaken,
+    FailedToSetupClock,
+}
 
 static TAKEN: AtomicBool = AtomicBool::new(false);
 
+#[allow(non_snake_case)]
+
 pub struct Pins {
-    pub d0: (char, u8),
-    pub d1: (char, u8),
-    pub d2: (char, u8),
-    pub d3: (char, u8),
-    pub d4: (char, u8),
-    pub d5: (char, u8),
-    pub d6: (char, u8),
-    pub d7: (char, u8),
-    pub d8: (char, u8),
-    pub d9: (char, u8),
-    pub d10: (char, u8),
-    pub d11: (char, u8),
-    pub d12: (char, u8),
-    pub d13: (char, u8),
-    pub d14: (char, u8),
-    pub d15: (char, u8),
-    pub d16: (char, u8),
-    pub d17: (char, u8),
-    pub d18: (char, u8),
-    pub on_board_led: (char, u8),
+    pub GPIO0: Pin<'C', 0>,
+    pub GPIO1: Pin<'C', 1>,
+    pub GPIO2: Pin<'C', 2>,
+    pub GPIO3: Pin<'C', 3>,
+    pub GPIO4: Pin<'C', 4>,
+    pub GPIO5: Pin<'C', 5>,
+    pub GPIO6: Pin<'C', 6>,
+    pub GPIO7: Pin<'C', 7>,
+    pub GPIO8: Pin<'A', 3>,
+    pub GPIO9: Pin<'A', 4>,
+    pub GPIO10: Pin<'A', 5>,
+    pub GPIO11: Pin<'A', 9>,
+    pub GPIO12: Pin<'A', 8>,
+    pub GPIO13: Pin<'B', 2>,
+    pub GPIO14: Pin<'B', 3>,
+    pub GPIO15: Pin<'B', 0>,
+    pub GPIO16: Pin<'B', 1>,
+    pub GPIO17: Pin<'A', 0>,
+    pub GPIO18: Pin<'D', 2>,
+    pub GPIO19: Pin<'A', 7>,
 }
 
 pub struct Prehirpals {
@@ -32,40 +40,40 @@ pub struct Prehirpals {
 }
 
 impl Prehirpals {
-    pub fn take() -> Self {
+    pub fn take() -> Result<Self, PrephipalsErros> {
         if TAKEN.swap(true, Ordering::Relaxed) {
-            panic!("Prehirpals already taken");
+            return Err(PrephipalsErros::AlreadyTaken);
         }
 
         unsafe {
             if cmu::cmu_wrap_init_78mhz() == 0 {
-                panic!("Failed to initialize core clock to 78 MHz");
+                return Err(PrephipalsErros::FailedToSetupClock);
             }
         }
 
-        Self {
+        Ok(Self {
             pins: Pins {
-                d0: ('C', 0),
-                d1: ('C', 1),
-                d2: ('C', 2),
-                d3: ('C', 3),
-                d4: ('C', 4),
-                d5: ('C', 5),
-                d6: ('C', 6),
-                d7: ('C', 7),
-                d8: ('A', 3),
-                d9: ('A', 4),
-                d10: ('A', 5),
-                d11: ('A', 9),
-                d12: ('A', 8),
-                d13: ('B', 2),
-                d14: ('B', 3),
-                d15: ('B', 0),
-                d16: ('B', 1),
-                d17: ('A', 0),
-                d18: ('D', 2),
-                on_board_led: ('A', 7),
+                GPIO0: Pin::new(),
+                GPIO1: Pin::new(),
+                GPIO2: Pin::new(),
+                GPIO3: Pin::new(),
+                GPIO4: Pin::new(),
+                GPIO5: Pin::new(),
+                GPIO6: Pin::new(),
+                GPIO7: Pin::new(),
+                GPIO8: Pin::new(),
+                GPIO9: Pin::new(),
+                GPIO10: Pin::new(),
+                GPIO11: Pin::new(),
+                GPIO12: Pin::new(),
+                GPIO13: Pin::new(),
+                GPIO14: Pin::new(),
+                GPIO15: Pin::new(),
+                GPIO16: Pin::new(),
+                GPIO17: Pin::new(),
+                GPIO18: Pin::new(),
+                GPIO19: Pin::new(),
             },
-        }
+        })
     }
 }
