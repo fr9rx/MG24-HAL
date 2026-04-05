@@ -5,7 +5,6 @@ use core::sync::atomic::{AtomicBool, Ordering};
 #[derive(Debug)]
 pub enum PrephipalsErros {
     AlreadyTaken,
-    FailedToSetupClock,
 }
 
 static TAKEN: AtomicBool = AtomicBool::new(false);
@@ -43,12 +42,6 @@ impl Prehirpals {
     pub fn take() -> Result<Self, PrephipalsErros> {
         if TAKEN.swap(true, Ordering::Relaxed) {
             return Err(PrephipalsErros::AlreadyTaken);
-        }
-
-        unsafe {
-            if cmu::cmu_wrap_init_78mhz() == 0 {
-                return Err(PrephipalsErros::FailedToSetupClock);
-            }
         }
 
         Ok(Self {

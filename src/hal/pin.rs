@@ -12,6 +12,10 @@ impl<const PORT: char, const PIN: u8> Pin<PORT, PIN, Unknown> {
     pub(crate) fn new() -> Self {
         Self { _mode: PhantomData }
     }
+
+    pub fn into_mode<NEWMODE>(self) -> Pin<PORT, PIN, NEWMODE> {
+        Pin { _mode: PhantomData }
+    }
 }
 
 pub const fn port_num(port: char) -> u32 {

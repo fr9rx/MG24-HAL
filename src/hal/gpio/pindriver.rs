@@ -1,14 +1,13 @@
 use crate::{
     ffi::{
-        cmu::{self, cmu_wrap_enable_gpio},
+        cmu::cmu_wrap_enable_gpio,
         gpio::{
-            self, gpio_wrap_pin_cfg, gpio_wrap_pin_high, gpio_wrap_pin_low, gpio_wrap_pin_read,
-            gpio_wrap_pin_toggle, gpio_wrap_port_set_drive_strength,
+            gpio_wrap_pin_cfg, gpio_wrap_pin_high, gpio_wrap_pin_low, gpio_wrap_pin_read,
+            gpio_wrap_pin_toggle,
         },
     },
     hal::pin::{Input, Output, Pin, Unknown, port_num},
 };
-use core::marker::PhantomData;
 use embedded_hal::digital::{ErrorType, InputPin as EhInput, OutputPin as EhOutput};
 
 #[derive(Debug)]
@@ -22,15 +21,11 @@ impl embedded_hal::digital::Error for GpioError {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum Pull {
     Up,
     Down,
     Floating,
-}
-
-pub enum DriveStrength {
-    I1mA,
-    I10mA,
 }
 
 pub struct PinDriver<const PORT: char, const PIN: u8, MODE> {
@@ -44,7 +39,7 @@ impl<const PORT: char, const PIN: u8> PinDriver<PORT, PIN, Output> {
             gpio_wrap_pin_cfg(port_num(PORT), PIN as u32, 4, 0);
         }
         Ok(Self {
-            _pin: pin.into::<Output>(),
+            _pin: pin.into_mode::<Output>(),
         })
     }
 
@@ -76,18 +71,6 @@ impl<const PORT: char, const PIN: u8> PinDriver<PORT, PIN, Output> {
     pub fn is_set_low(&mut self) -> Result<bool, GpioError> {
         Ok(!self.is_set_high().unwrap())
     }
-
-    pub fn set_drive_strength(&mut self, strength: DriveStrength) -> Result<(), GpioError> {
-        let s = match strength {
-            DriveStrength::I10mA => 1,
-            DriveStrength::I1mA => 0,
-        };
-
-        unsafe {
-            gpio_wrap_port_set_drive_strength(port_num(PORT), s);
-        }
-        Ok(())
-    }
 }
 
 pub struct InputConfig {
@@ -104,7 +87,7 @@ impl InputConfig {
     }
 }
 
-impl<const PORT: char, PIN: u8> PinDriver<PORT, PIN, Input> {
+impl<const PORT: char, const PIN: u8> PinDriver<PORT, PIN, Input> {
     pub fn input(pin: Pin<PORT, PIN, Unknown>, config: InputConfig) -> Result<Self, GpioError> {
         let (mode, out) = match config._pull {
             Pull::Floating => (1, 0),
@@ -118,7 +101,7 @@ impl<const PORT: char, PIN: u8> PinDriver<PORT, PIN, Input> {
         }
 
         Ok(Self {
-            _pin: pin.into::<Input>(),
+            _pin: pin.into_mode::<Input>(),
         })
     }
 

@@ -15,8 +15,6 @@ fn main() {
         .file("wrapper/emlib/src/em_cmu.c")
         .file("wrapper/emlib/src/em_core.c")
         .file("wrapper/emlib/src/em_emu.c")
-        .file("wrapper/emlib/src/em_timer.c")
-        .file("wrapper/emlib/src/em_pwm.c")
         .include("wrapper")
         .include("wrapper/emlib/inc")
         .include("wrapper/CMSIS/Core/Include")

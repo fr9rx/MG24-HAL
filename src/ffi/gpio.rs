@@ -4,5 +4,4 @@ unsafe extern "C" {
     pub fn gpio_wrap_pin_low(port: u32, pin: u32);
     pub fn gpio_wrap_pin_toggle(port: u32, pin: u32);
     pub fn gpio_wrap_pin_read(port: u32, pin: u32) -> u32;
-    pub fn gpio_wrap_port_set_drive_strength(port: u32, strength: u32);
 }
