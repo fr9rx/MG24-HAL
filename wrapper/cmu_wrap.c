@@ -1,5 +1,5 @@
 #include "cmu_wrap.h"
-#include "emlib/inc/em_cmu.h"
+#include "em_cmu.h"
 
 
 void cmu_wrap_enable_clock(unsigned int clock, unsigned int enable) {

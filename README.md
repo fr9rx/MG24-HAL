@@ -47,15 +47,16 @@ The API is modeled after the ESP-RS ecosystem (esp-hal), which
 represents the current gold standard for embedded Rust HAL design. 
 Peripherals are owned, consumed, and type-safe:
 ```rust
-let dp = Peripherals::take();
-let mut led = OutputPin::new(dp.pins.on_board_led);
-let button  = InputPin::new(dp.pins.d0, Pull::Up);
+let dp = Peripherals::take().unwrap();
+let mut led = PinDriver::output(dp.pins.GPIO1);
+let config = InputConfig::new(Pull::Up);
+let mut button = PinDriver::input(dp.pins.GPIO3, config).unwrap();
 
-led.set_high();
-led.toggle();
+led.write_high().unwrap();
+led.toggle().unwrap();
 
-if button.is_low() {
-    led.set_high();
+if button.read().unwrap() == false {
+    led.write_high().unwrap();
 }
 ```
 

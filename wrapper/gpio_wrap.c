@@ -1,5 +1,5 @@
 #include "gpio_wrap.h"
-#include "emlib/inc/em_gpio.h"
+#include "em_gpio.h"
 
 void gpio_wrap_pin_cfg(unsigned int port, unsigned int pin, unsigned int mode, unsigned int out) {
     GPIO_Unlock();

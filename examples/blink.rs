@@ -10,6 +10,7 @@ use panic_halt as _;
 
 #[entry]
 fn main() -> ! {
+    delay_ms(2000);
     let dp = Prehirpals::take().unwrap();
     let mut led = PinDriver::output(dp.pins.GPIO1).unwrap();
     loop {

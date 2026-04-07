@@ -1,4 +1,3 @@
-use crate::ffi::cmu;
 use crate::hal::pin::Pin;
 use core::sync::atomic::{AtomicBool, Ordering};
 

@@ -120,10 +120,12 @@ impl<const PORT: char, const PIN: u8> ErrorType for PinDriver<PORT, PIN, Input> 
 
 impl<const PORT: char, const PIN: u8> EhOutput for PinDriver<PORT, PIN, Output> {
     fn set_high(&mut self) -> Result<(), Self::Error> {
-        Ok(self.write_high().unwrap())
+        self.write_high().unwrap();
+        Ok(())
     }
     fn set_low(&mut self) -> Result<(), Self::Error> {
-        Ok(self.write_low().unwrap())
+        self.write_low().unwrap();
+        Ok(())
     }
 }
 

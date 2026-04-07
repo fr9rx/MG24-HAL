@@ -1,26 +1,46 @@
 fn main() {
-    // tell cargo where memory.x is
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    println!("cargo:rustc-link-search={}", manifest_dir);
-    println!("cargo:rerun-if-changed=memory.x");
-    println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=wrapper/");
+    use std::env;
+    use std::path::PathBuf;
 
-    cc::Build::new()
+    // Get home directory
+    let home = dirs::home_dir().expect("No home directory found");
+
+    // Define external SDK paths
+    let emlib = home.join(".emlib");
+    let cmsis = home.join(".cmsis");
+    let mg24 = home.join(".mg24");
+
+    // Validate paths
+    assert!(emlib.exists(), "Missing ~/.emlib");
+    assert!(cmsis.exists(), "Missing ~/.cmsis");
+    assert!(mg24.exists(), "Missing ~/.mg24");
+
+    // Tell Cargo when to rerun
+    println!("cargo:rerun-if-changed=build.rs");
+
+    // Compiler config
+    let mut build = cc::Build::new();
+
+    build
         .compiler("arm-none-eabi-gcc")
+        // Your wrappers
         .file("wrapper/gpio_wrap.c")
         .file("wrapper/cmu_wrap.c")
         .file("wrapper/system_clock_stubs.c")
-        .file("wrapper/emlib/src/em_gpio.c")
-        .file("wrapper/emlib/src/em_cmu.c")
-        .file("wrapper/emlib/src/em_core.c")
-        .file("wrapper/emlib/src/em_emu.c")
+        // EMLIB sources (from home dir)
+        .file(emlib.join("src/em_gpio.c"))
+        .file(emlib.join("src/em_cmu.c"))
+        .file(emlib.join("src/em_core.c"))
+        .file(emlib.join("src/em_emu.c"))
+        // Include paths
         .include("wrapper")
-        .include("wrapper/emlib/inc")
-        .include("wrapper/CMSIS/Core/Include")
-        .include("wrapper/device/EFR32MG24/Include")
-        .include("common/inc")
+        .include(emlib.join("inc"))
+        .include(cmsis.join("Core/Include"))
+        .include(mg24.join("Include"))
+        .include(cmsis.join("common/inc"))
+        // Defines
         .define("EFR32MG24B220F1536IM48", None)
+        // Flags
         .flag("-mthumb")
         .flag("-mfpu=fpv5-sp-d16")
         .flag("-mfloat-abi=hard")
