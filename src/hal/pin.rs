@@ -9,7 +9,7 @@ pub struct Pin<const PORT: char, const PIN: u8, MODE = Unknown> {
 }
 
 impl<const PORT: char, const PIN: u8> Pin<PORT, PIN, Unknown> {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self { _mode: PhantomData }
     }
 
