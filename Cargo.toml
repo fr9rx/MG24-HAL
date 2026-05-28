@@ -9,9 +9,11 @@ readme = "README.md"
 keywords = ["embedded", "hal", "mg24", "no-std"]
 categories = ["embedded", "no-std"]
 
+
 [dependencies]
 cortex-m = "0.7.7"
 cortex-m-rt = "0.7.5"
+efr32mg24-pac = { version = "0.1.0", features = ["cortex-m-rt", "rt"] }
 embedded-hal = "1.0.0"
 panic-halt = "1.0.0"
 

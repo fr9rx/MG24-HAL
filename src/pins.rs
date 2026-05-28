@@ -17,13 +17,3 @@ impl<const PORT: char, const PIN: u8> Pin<PORT, PIN, Unknown> {
         Pin { _mode: PhantomData }
     }
 }
-
-pub const fn port_num(port: char) -> u32 {
-    match port {
-        'A' => 0,
-        'B' => 1,
-        'C' => 2,
-        'D' => 3,
-        _ => panic!("invalid port"),
-    }
-}
