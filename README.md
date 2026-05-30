@@ -4,6 +4,13 @@
 > Built directly on [`efr32mg24-pac`](https://crates.io/crates/efr32mg24-pac).  
 > No C, no EMLIB, no bindings.
 
+## Notice
+for now i dont have the board i am wating to get it so this code is expermintal so please for any one who tried this hal to conatct me and tell me if it worked or not i will providde links to my platforms and if the code bricked you baord so sorry to hear that 
+
+- **WhatsApp**: 0776708542
+- **Gmail**: fahadhiyari0@gmail.com
+- **instagram**: fr9rx
+
 ## 🎯 Hardware Target
 
 - **Chip**: EFR32MG24B220F1536IM48  

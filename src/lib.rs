@@ -6,6 +6,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use efr32mg24_pac::CmuS;
 use pins::Pin;
 pub mod delay;
+pub use efr32mg24_pac as pac;
 
 #[derive(Debug)]
 pub enum PeripheralsErrors {
@@ -15,6 +16,16 @@ pub enum PeripheralsErrors {
 static TAKEN: AtomicBool = AtomicBool::new(false);
 
 #[allow(non_snake_case)]
+
+pub struct CpuConfig {
+    gpio_clock: bool,
+}
+
+impl Default for CpuConfig {
+    fn default() -> Self {
+        Self { gpio_clock: true }
+    }
+}
 
 pub struct Pins {
     pub pc0: Pin<'C', 0>,
@@ -55,13 +66,15 @@ pub struct Peripherals {
     pub pins: Pins,
 }
 
-pub fn init() -> Result<Peripherals, PeripheralsErrors> {
+pub fn init(config: CpuConfig) -> Result<Peripherals, PeripheralsErrors> {
     if TAKEN.swap(true, Ordering::AcqRel) {
         return Err(PeripheralsErrors::AlreadyTaken);
     }
     unsafe {
         let cmu = &*CmuS::ptr();
-        cmu.clken0().modify(|r, w| w.bits(r.bits() | 1 << 26));
+        if config.gpio_clock {
+            cmu.clken0().modify(|r, w| w.bits(r.bits() | 1 << 26));
+        }
     };
     Ok(Peripherals {
         pins: Pins {

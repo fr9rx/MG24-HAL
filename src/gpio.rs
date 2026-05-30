@@ -6,10 +6,21 @@ use embedded_hal::digital::{
 
 #[derive(Debug)]
 pub enum GpioError {
-    InitFailed,
     FailedToConfiguareGpio,
     FailedToSetGpio,
     FailedToSetPull,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Level {
+    High,
+    Low,
+}
+
+impl From<bool> for Level {
+    fn from(value: bool) -> Self {
+        if value { Level::High } else { Level::Low }
+    }
 }
 
 impl embedded_hal::digital::Error for GpioError {
@@ -18,7 +29,7 @@ impl embedded_hal::digital::Error for GpioError {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Pull {
     Up,
     Down,
@@ -239,6 +250,14 @@ impl<const PORT: char, const PIN: u8> Gpio<PORT, PIN, Output> {
         Ok(())
     }
 
+    pub fn write_level(&mut self, level: Level) -> Result<(), GpioError> {
+        if level == Level::High {
+            self.write_high()
+        } else {
+            self.write_low()
+        }
+    }
+
     pub fn is_set_high(&mut self) -> bool {
         unsafe {
             let gpio = &*GpioS::ptr();
@@ -272,13 +291,11 @@ pub struct InputConfig {
     pub pull: Pull,
 }
 
-impl InputConfig {
-    pub fn new(pull: Pull) -> Self {
-        Self { pull: pull }
-    }
-
-    pub fn read_pull(&mut self) -> Pull {
-        self.pull
+impl Default for InputConfig {
+    fn default() -> Self {
+        InputConfig {
+            pull: Pull::Floating,
+        }
     }
 }
 
@@ -389,7 +406,7 @@ impl<const PORT: char, const PIN: u8> Gpio<PORT, PIN, Input> {
         })
     }
 
-    pub fn read(&mut self) -> bool {
+    pub fn read(&mut self) -> Level {
         unsafe {
             let gpio = &*GpioS::ptr();
             let din = match PORT {
@@ -399,7 +416,7 @@ impl<const PORT: char, const PIN: u8> Gpio<PORT, PIN, Input> {
                 'D' => gpio.portd_din().read().bits(),
                 _ => panic!("Failed"),
             };
-            ((din >> PIN) & 1) != 0
+            Level::from(((din >> PIN) & 1) != 0)
         }
     }
 }
@@ -423,10 +440,18 @@ impl<const PORT: char, const PIN: u8> EhOutput for Gpio<PORT, PIN, Output> {
 
 impl<const PORT: char, const PIN: u8> EhInput for Gpio<PORT, PIN, Input> {
     fn is_high(&mut self) -> Result<bool, Self::Error> {
-        if self.read() { Ok(true) } else { Ok(false) }
+        if self.read() == Level::High {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
     fn is_low(&mut self) -> Result<bool, Self::Error> {
-        if self.read() { Ok(false) } else { Ok(true) }
+        if self.read() == Level::High {
+            Ok(false)
+        } else {
+            Ok(true)
+        }
     }
 }
 
@@ -441,3 +466,4 @@ impl<const PORT: char, const PIN: u8> StatefulOutputPin for Gpio<PORT, PIN, Outp
         Ok(self.is_set_low())
     }
 }
+ 
