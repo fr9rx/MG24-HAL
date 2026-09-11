@@ -1,0 +1,19 @@
+[package]
+name = "mg24-hal-macros"
+version = "2.0.0"
+edition = "2021"
+description = "Procedural macros for mg24-hal"
+license = "MIT"
+repository = "https://github.com/fr9rx/mg24-hal"
+keywords = ["embedded", "hal", "mg24", "no-std"]
+categories = ["embedded", "no-std"]
+
+[lib]
+proc-macro = true
+bench = false
+test = false
+
+# No syn/quote/proc-macro2: the transform is small enough to do against the
+# raw `proc_macro` token stream, and the function body is re-emitted as the
+# original group so spans (and therefore error messages) stay intact.
+[dependencies]

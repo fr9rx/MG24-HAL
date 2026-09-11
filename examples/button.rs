@@ -1,25 +1,23 @@
 #![no_std]
 #![no_main]
 
-use cortex_m_rt::entry;
 use mg24_hal::{
     CpuConfig,
-    gpio::{Gpio, InputConfig, Level, Pull},
+    gpio::{Input, InputConfig, Level, Output, OutputConfig, Pull},
 };
-use panic_halt as _;
 
-#[entry]
+#[mg24_hal::main]
 fn main() -> ! {
     let dp = mg24_hal::init(CpuConfig::default()).unwrap();
-    let mut led = Gpio::output(dp.pins.pc1).unwrap();
-    let mut config = InputConfig::default();
-    config.pull = Pull::Up;
-    let mut button = Gpio::input(dp.pins.pc3, config).unwrap();
+
+    let mut led = Output::new(dp.pins.pc1, Level::Low, OutputConfig::default());
+    let button = Input::new(dp.pins.pc3, InputConfig::default().with_pull(Pull::Up));
+
     loop {
-        if button.read() == Level::Low {
-            led.write_high().unwrap();
-        } else {
-            led.write_low().unwrap();
-        }
+        // Pulled up, so the button reads low while it is held down.
+        led.set_level(match button.level() {
+            Level::Low => Level::High,
+            Level::High => Level::Low,
+        });
     }
 }

@@ -1,1 +1,6 @@
-/target
+target/
+
+# Silicon Labs reference manual and datasheet, converted to markdown for
+# grepping while writing register code. They are SiLabs' copyrighted
+# documentation, so they stay local rather than being redistributed here.
+docs/

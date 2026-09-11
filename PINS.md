@@ -29,3 +29,7 @@
 - `PA06` — internal flash CS
 - `PD03` — battery control
 - `PD04` — battery ADC
+
+`mg24_hal::Pins` still hands these out, since they are real pins on the die and
+the HAL cannot know your board. Driving `PB04`/`PB05` will upset the RF front
+end, and `PA06` will fight the onboard flash.

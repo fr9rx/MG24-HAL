@@ -1,18 +1,22 @@
 #![no_std]
 #![no_main]
 
-use cortex_m_rt::entry;
-use mg24_hal::{CpuConfig, delay::init_delay, gpio::Gpio};
-use panic_halt as _;
+use mg24_hal::{
+    CpuConfig,
+    delay::init_delay,
+    gpio::{Level, Output, OutputConfig},
+};
 
-#[entry]
+#[mg24_hal::main]
 fn main() -> ! {
     let dp = mg24_hal::init(CpuConfig::default()).unwrap();
-    let mut led = Gpio::output(dp.pins.pa7).unwrap();
-    let mut delay = init_delay();
-    let delay_value = 500;
+
+    // PA07 is the onboard orange LED on the XIAO MG24.
+    let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
+    let delay = init_delay();
+
     loop {
-        led.write_toggle().unwrap();
-        delay.delay_ms(delay_value);
+        led.toggle();
+        delay.delay_ms(500);
     }
 }
