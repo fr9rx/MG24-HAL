@@ -766,7 +766,7 @@ impl<'d> Flex<'d> {
         // making the caller work out odd-versus-even themselves is a step to
         // get wrong. SAFETY: the caller asked for this interrupt.
         unsafe {
-            interrupt::enable_irq(if n % 2 == 0 {
+            interrupt::enable_irq(if n.is_multiple_of(2) {
                 interrupt::GPIO_EVEN
             } else {
                 interrupt::GPIO_ODD

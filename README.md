@@ -176,22 +176,24 @@ cargo run --example blink --release
 ```
 
 Build in release for anything you actually flash. The pin identity is erased to
-a runtime `AnyPin`, and it is constant propagation through the inlined
-constructors that folds it back to a constant — so a debug image is far larger
-than it needs to be:
+a runtime `AnyPin`, and it is cross-crate inlining plus constant propagation
+that folds it back to a constant — which is why `[profile.release]` sets
+`lto = true` and `codegen-units = 1`. Without LTO the same images are roughly
+four times larger.
 
 | Example | Release image |
 |---|---|
-| `blink` | 5,564 B |
-| `button` | 5,508 B |
-| `open_drain` | 5,768 B |
-| `flex` | 6,028 B |
-| `gpio_interrupt` | 6,096 B |
-| `cpu_speed` | 6,552 B |
-| `logging` | 8,108 B |
+| `blink` | 1,416 B |
+| `button` | 1,428 B |
+| `open_drain` | 1,544 B |
+| `flex` | 1,608 B |
+| `gpio_interrupt` | 2,408 B |
+| `cpu_speed` | 2,592 B |
+| `logging` | 4,240 B |
 
-(vector table + `.text` + `.rodata`; the same `blink` is 15,884 B in debug.
-`logging` is bigger because `core::fmt` pulls in formatting machinery.)
+(vector table + `.text` + `.rodata`. `logging` is the outlier because
+`core::fmt` drags in formatting machinery — the argument for `defmt` if that
+ever matters.)
 
 ## ⚙️ Cargo Features
 
