@@ -3,7 +3,7 @@
 
 use mg24_hal::{
     CpuConfig,
-    delay::init_delay,
+    delay::Delay,
     gpio::{Level, Output, OutputConfig},
 };
 
@@ -13,7 +13,7 @@ fn main() -> ! {
 
     // PA07 is the onboard orange LED on the XIAO MG24.
     let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
-    let delay = init_delay();
+    let delay = Delay::new();
 
     loop {
         led.toggle();

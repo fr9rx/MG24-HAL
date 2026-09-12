@@ -15,7 +15,7 @@
 //!
 //! use mg24_hal::{
 //!     CpuConfig,
-//!     delay::init_delay,
+//!     delay::Delay,
 //!     gpio::{Level, Output, OutputConfig},
 //! };
 //!
@@ -23,7 +23,7 @@
 //! fn main() -> ! {
 //!     let dp = mg24_hal::init(CpuConfig::default()).unwrap();
 //!     let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
-//!     let delay = init_delay();
+//!     let delay = Delay::new();
 //!
 //!     loop {
 //!         led.toggle();

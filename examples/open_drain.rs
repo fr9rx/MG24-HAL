@@ -12,14 +12,14 @@
 
 use mg24_hal::{
     CpuConfig,
-    delay::init_delay,
+    delay::Delay,
     gpio::{DriveMode, Level, Output, OutputConfig, Pull},
 };
 
 #[mg24_hal::main]
 fn main() -> ! {
     let dp = mg24_hal::init(CpuConfig::default()).unwrap();
-    let delay = init_delay();
+    let delay = Delay::new();
 
     // Open-drain with the internal pull-up: high is released, not driven.
     let mut sda = Output::new(

@@ -83,7 +83,7 @@ No ARM GCC toolchain is needed — `rust-lld` links the firmware.
 
 use mg24_hal::{
     CpuConfig,
-    delay::init_delay,
+    delay::Delay,
     gpio::{Level, Output, OutputConfig},
 };
 
@@ -91,7 +91,7 @@ use mg24_hal::{
 fn main() -> ! {
     let dp = mg24_hal::init(CpuConfig::default()).unwrap();
     let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
-    let delay = init_delay();
+    let delay = Delay::new();
 
     loop {
         led.toggle();
@@ -279,10 +279,10 @@ retunes it to any other factory-calibrated band, using the per-chip trim values
 from the DEVINFO page:
 
 ```rust
-use mg24_hal::{CpuConfig, clock::CpuSpeed, delay::init_delay};
+use mg24_hal::{CpuConfig, clock::CpuSpeed, delay::Delay};
 
 let dp = mg24_hal::init(CpuConfig::default().with_cpu_speed(CpuSpeed::Mhz64)).unwrap();
-let delay = init_delay(); // reads clock::sysclk_hz(), so it is calibrated for 64 MHz
+let delay = Delay::new(); // reads clock::sysclk_hz(), so it tracks the new speed
 ```
 
 Bands: 4, 5, 7, 10, 13, 16, 19, 20, 26, 32, 38, 48, 56, 64 MHz.

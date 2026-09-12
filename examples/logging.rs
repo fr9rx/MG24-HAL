@@ -14,7 +14,7 @@
 
 use mg24_hal::{
     CpuConfig, clock,
-    delay::init_delay,
+    delay::Delay,
     gpio::{Level, Output, OutputConfig},
     rprintln, rtt,
 };
@@ -27,7 +27,7 @@ fn main() -> ! {
     rprintln!("mg24-hal up, SYSCLK = {} Hz", clock::sysclk_hz());
 
     let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
-    let delay = init_delay();
+    let delay = Delay::new();
 
     let mut ticks: u32 = 0;
 

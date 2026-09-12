@@ -1,7 +1,7 @@
 //! Running the core at a chosen speed.
 //!
 //! `CpuSpeed` retunes HFRCODPLL to one of its factory-calibrated bands, using
-//! the per-chip trim values from the DEVINFO page. `init_delay()` reads the
+//! the per-chip trim values from the DEVINFO page. `Delay` reads the
 //! configured speed back, so the blink below is the same wall-clock rate at
 //! every band — only the number of cycles behind it changes.
 //!
@@ -19,7 +19,7 @@
 use mg24_hal::{
     CpuConfig,
     clock::{self, CpuSpeed},
-    delay::init_delay,
+    delay::Delay,
     gpio::{Level, Output, OutputConfig},
 };
 
@@ -29,7 +29,7 @@ fn main() -> ! {
     let dp = mg24_hal::init(CpuConfig::default().with_cpu_speed(CpuSpeed::Mhz64)).unwrap();
 
     // Built after init, so it is calibrated for the new clock.
-    let delay = init_delay();
+    let delay = Delay::new();
 
     let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
 
