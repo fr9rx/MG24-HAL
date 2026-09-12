@@ -19,10 +19,16 @@
 //!
 //! # How the probe finds it
 //!
-//! The host scans RAM for the 16-byte string `SEGGER RTT` and reads the control
-//! block that follows. [`init`] writes that marker **last**, after every field
-//! is valid, so a probe that happens to scan mid-initialisation cannot latch
-//! onto a half-built block.
+//! By symbol: the control block is exported as `_SEGGER_RTT`, which is the name
+//! probe-rs looks up in the ELF. That is why it is `#[no_mangle]` rather than
+//! carrying a Rust-mangled name — with a mangled name the lookup fails and the
+//! only way in is `--rtt-scan-memory`, which makes a plain `probe-rs attach`
+//! print nothing at all.
+//!
+//! The block also carries the 16-byte string `SEGGER RTT`, which is what a
+//! memory scan matches on. [`init`] writes that marker **last**, after every
+//! field is valid, so a probe scanning mid-initialisation cannot latch onto a
+//! half-built block.
 //!
 //! # Cost
 //!
@@ -76,6 +82,10 @@ struct ControlBlock {
 /// Wrapper that makes a `static` of raw pointers legal.
 ///
 /// Access is confined to this module and serialised by [`interrupt::free`].
+///
+/// `repr(transparent)` matters: the control block's symbol has to point at the
+/// `ControlBlock` itself, not at a wrapper that merely contains it.
+#[repr(transparent)]
 struct Shared<T>(UnsafeCell<T>);
 
 // SAFETY: every access below runs inside `interrupt::free` on a single core.
@@ -83,10 +93,22 @@ unsafe impl<T> Sync for Shared<T> {}
 
 static CHANNEL_NAME: [u8; 9] = *b"Terminal\0";
 
+/// The RTT control block.
+///
+/// The name is not decorative. A probe locates the block by looking up a symbol
+/// called exactly `_SEGGER_RTT` in the ELF; without it, the only way to find the
+/// block is `--rtt-scan-memory`, and a plain `probe-rs attach` or `cargo run`
+/// silently prints nothing. `no_mangle` is what keeps the symbol spelled that
+/// way rather than Rust-mangled.
+///
 /// Starts zeroed, so the whole thing lands in `.bss` and costs no flash. The
 /// zeroed `id` also means an uninitialised block can never be mistaken for a
 /// live one.
-static CONTROL_BLOCK: Shared<ControlBlock> = Shared(UnsafeCell::new(ControlBlock {
+// Not `pub`: `no_mangle` gives the symbol external linkage on its own, so the
+// linker sees `_SEGGER_RTT` while the types behind it stay private.
+#[used]
+#[unsafe(no_mangle)]
+static _SEGGER_RTT: Shared<ControlBlock> = Shared(UnsafeCell::new(ControlBlock {
     id: [0; 16],
     max_up: 0,
     max_down: 0,
@@ -117,7 +139,7 @@ static DOWN_BUFFER: Shared<[u8; DOWN_BUFFER_SIZE]> = Shared(UnsafeCell::new([0; 
 /// resets the buffer, which will confuse an already-attached probe.
 pub fn init() {
     interrupt::free(|| unsafe {
-        let cb = CONTROL_BLOCK.0.get();
+        let cb = _SEGGER_RTT.0.get();
 
         (*cb).max_up = 1;
         (*cb).max_down = 1;
@@ -166,7 +188,7 @@ unsafe fn available(write: u32, read: u32) -> u32 {
 /// Writes `bytes` into the ring buffer, or drops them if they do not fit.
 fn write_bytes(bytes: &[u8]) {
     interrupt::free(|| unsafe {
-        let cb = CONTROL_BLOCK.0.get();
+        let cb = _SEGGER_RTT.0.get();
 
         // Not initialised: nothing to write into.
         if (*cb).up.buffer.is_null() {

@@ -254,7 +254,9 @@ rprintln!("SYSCLK = {} Hz", mg24_hal::clock::sysclk_hz());
 ```
 
 ```bash
-probe-rs attach --chip EFR32MG24B220F1536IM48 --rtt-scan-memory \
+cargo run --release --example logging
+# or, against an already-flashed image:
+probe-rs attach --chip EFR32MG24B220F1536IM48 \
     target/thumbv8m.main-none-eabihf/release/examples/logging
 ```
 
@@ -264,8 +266,13 @@ tick 0 led=High
 tick 1 led=Low
 ```
 
-`--rtt-scan-memory` is required: probe-rs finds the control block by scanning
-RAM for its marker, and without the flag it reports nothing.
+The control block is exported as `_SEGGER_RTT`, which is the symbol probe-rs
+looks up, so no `--rtt-scan-memory` is needed.
+
+**If you see no output, check the program actually logs.** Only an image that
+calls `rtt::init()` produces anything, and `.bss` zeroing only covers the
+running program's own statics — so a control block left in RAM by a previous
+image can survive a reset and make an attach look alive while nothing arrives.
 
 Messages are dropped rather than truncated or blocked when the buffer is full,
 so a line either arrives whole or not at all, and the core never stalls waiting

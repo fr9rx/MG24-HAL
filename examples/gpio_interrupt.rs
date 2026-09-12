@@ -22,6 +22,7 @@ use mg24_hal::{
     CpuConfig,
     gpio::{Event, Input, InputConfig, Level, Output, OutputConfig, Pull},
     interrupt::{self, Mutex},
+    rprintln, rtt,
 };
 
 /// Shared with the handler so it can clear the flag through the driver rather
@@ -43,6 +44,10 @@ fn GPIO_ODD() {
     LED.lock(|slot| {
         if let Some(led) = slot.borrow_mut().as_mut() {
             led.toggle();
+            // Note this calls into flash: core::fmt does not fit in .ram_text
+            // alongside the handler, so this particular handler would not
+            // survive a flash erase. Fine here, worth knowing.
+            rprintln!("button -> led={:?}", led.output_level());
         }
     });
 }
@@ -51,7 +56,10 @@ fn GPIO_ODD() {
 fn main() -> ! {
     let dp = mg24_hal::init(CpuConfig::default()).unwrap();
 
-    let led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
+    rtt::init();
+    rprintln!("waiting for a falling edge on PC3");
+
+    let led = Output::new(dp.pins.pc1, Level::Low, OutputConfig::default());
 
     let mut button = Input::new(
         dp.pins.pc3,
