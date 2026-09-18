@@ -249,3 +249,34 @@ macro_rules! rprintln {
         $crate::rtt::write_fmt(::core::format_args!("{}\n", ::core::format_args!($($arg)*)))
     };
 }
+
+/// Logs with ESP-IDF-style timestamp (milliseconds since boot) and trailing newline.
+///
+/// Format: [XXXXX] Your message here
+/// Where XXXXX is milliseconds elapsed since CPU boot.
+#[macro_export]
+macro_rules! rprintln_ts {
+    () => {
+        {
+            let ms = $crate::timestamp::millis_since_boot();
+            $crate::rtt::write_fmt(::core::format_args!("[{:5}] \n", ms))
+        }
+    };
+    ($($arg:tt)*) => {
+        {
+            let ms = $crate::timestamp::millis_since_boot();
+            $crate::rtt::write_fmt(::core::format_args!("[{:5}] {}\n", ms, ::core::format_args!($($arg)*)))
+        }
+    };
+}
+
+/// Logs with timestamp but without trailing newline.
+#[macro_export]
+macro_rules! rprint_ts {
+    ($($arg:tt)*) => {
+        {
+            let ms = $crate::timestamp::millis_since_boot();
+            $crate::rtt::write_fmt(::core::format_args!("[{:5}] {}", ms, ::core::format_args!($($arg)*)))
+        }
+    };
+}

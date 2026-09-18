@@ -46,6 +46,7 @@ pub mod interrupt;
 pub mod pins;
 pub mod rt;
 pub mod rtt;
+pub mod timestamp;
 
 #[cfg(feature = "panic-handler")]
 pub mod panic;

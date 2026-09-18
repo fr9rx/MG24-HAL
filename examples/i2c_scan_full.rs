@@ -2,7 +2,7 @@
 #![no_main]
 
 use mg24_hal::{
-    rprintln, rtt,
+    rprintln_ts, rtt, timestamp,
     CpuConfig,
     delay::Delay,
     gpio::{Output, OutputConfig, Level},
@@ -12,7 +12,8 @@ use mg24_hal::{
 #[mg24_hal::main]
 fn main() -> ! {
     rtt::init();
-    rprintln!("\n=== I2C Full Range Bus Scanner ===");
+    timestamp::init();
+    rprintln_ts!("=== I2C Full Range Bus Scanner ===");
 
     let dp = mg24_hal::init(CpuConfig::default().with_i2c_clock(true)).unwrap();
     let delay = Delay::new();
@@ -20,7 +21,7 @@ fn main() -> ! {
     // Setup LED for status indication
     let mut led = Output::new(dp.pins.pa7, Level::Low, OutputConfig::default());
 
-    rprintln!("Configured I2C clock and pins");
+    rprintln_ts!("Configured I2C clock and pins");
 
     // Create I2C instance (I2C0 with standard mode)
     let mut i2c = I2c::<I2c0>::new(
@@ -29,12 +30,12 @@ fn main() -> ! {
         I2cConfig::default().with_speed(I2cSpeed::Standard),
     );
 
-    rprintln!("I2C0 initialized at 100 kHz");
-    rprintln!("\nScanning ALL I2C addresses 0x00-0x7F (128 total)...\n");
-    rprintln!("Address ranges:");
-    rprintln!("  0x00-0x07: Reserved for special commands");
-    rprintln!("  0x08-0x77: Standard I2C addresses");
-    rprintln!("  0x78-0x7F: Reserved addresses\n");
+    rprintln_ts!("I2C0 initialized at 100 kHz");
+    rprintln_ts!("Scanning ALL I2C addresses 0x00-0x7F (128 total)");
+    rprintln_ts!("Address ranges:");
+    rprintln_ts!("  0x00-0x07: Reserved for special commands");
+    rprintln_ts!("  0x08-0x77: Standard I2C addresses");
+    rprintln_ts!("  0x78-0x7F: Reserved addresses");
 
     let mut found_count = 0;
     let mut addresses = [0u8; 128];
@@ -44,7 +45,7 @@ fn main() -> ! {
         // Try a quick write to see if device responds
         match i2c.write(addr, &[]) {
             Ok(()) => {
-                rprintln!("Found device at 0x{:02X} ({})", addr, addr);
+                rprintln_ts!("Found device at 0x{:02X} ({})", addr, addr);
                 addresses[found_count as usize] = addr;
                 found_count += 1;
                 led.toggle();
@@ -57,15 +58,15 @@ fn main() -> ! {
         delay.delay_ms(10);
     }
 
-    rprintln!("\n=== Full Range Scan Complete ===");
-    rprintln!("Total addresses scanned: 128");
-    rprintln!("Found {} device(s):\n", found_count);
+    rprintln_ts!("=== Full Range Scan Complete ===");
+    rprintln_ts!("Total addresses scanned: 128");
+    rprintln_ts!("Found {} device(s):", found_count);
 
     if found_count > 0 {
-        rprintln!("Devices found at:");
+        rprintln_ts!("Devices found at:");
         for i in 0..found_count {
             let addr = addresses[i as usize];
-            rprintln!("  0x{:02X} (decimal: {})", addr, addr);
+            rprintln_ts!("  0x{:02X} (decimal: {})", addr, addr);
         }
 
         // Blink LED success pattern
@@ -76,15 +77,15 @@ fn main() -> ! {
             delay.delay_ms(100);
         }
     } else {
-        rprintln!("No devices found on I2C0 bus");
-        rprintln!("\nDiagnostics:");
-        rprintln!("  - Check pull-up resistors (typically 4.7kΩ on SDA/SCL)");
-        rprintln!("  - Verify device power supply");
-        rprintln!("  - Check pin connections (PC4=SDA, PC5=SCL)");
-        rprintln!("  - Verify I2C device is not in sleep mode");
+        rprintln_ts!("No devices found on I2C0 bus");
+        rprintln_ts!("Diagnostics:");
+        rprintln_ts!("  - Check pull-up resistors (typically 4.7kΩ on SDA/SCL)");
+        rprintln_ts!("  - Verify device power supply");
+        rprintln_ts!("  - Check pin connections (PC4=SDA, PC5=SCL)");
+        rprintln_ts!("  - Verify I2C device is not in sleep mode");
     }
 
-    rprintln!("\nScanning finished. Device will loop forever.");
+    rprintln_ts!("Scanning finished. Device will loop forever.");
     loop {
         led.toggle();
         delay.delay_ms(500);
