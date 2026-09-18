@@ -13,6 +13,7 @@ use mg24_hal::{
 /// 0x50 = EEPROM (24C02)
 /// 0x48 = Temperature sensor (LM75)
 /// 0x68 = RTC (DS3231) or Accelerometer (MPU6050)
+#[allow(dead_code)]
 const SLAVE_ADDR: u8 = 0x50; // Default to EEPROM
 
 #[mg24_hal::main]

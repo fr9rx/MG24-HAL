@@ -39,18 +39,18 @@ fn main() -> ! {
     let mut dma = Dma::new();
 
     // One-liner M2M copy: Safe API accepts references directly
-    dma.copy_slice(0, &src_data, &mut dst_buffer);
+    let _ = dma.copy_slice(0, &src_data, &mut dst_buffer);
     rprintln_ts!("DMA transfer started");
 
     // Wait for completion
     let mut timeout = 0;
-    while !dma.is_transfer_done(0) && timeout < 1000 {
+    while !dma.is_transfer_done(0).unwrap_or(false) && timeout < 1000 {
         timeout += 1;
         delay.delay_us(100);
     }
 
-    if dma.is_transfer_done(0) {
-        dma.clear_done_flag(0);
+    if dma.is_transfer_done(0).unwrap_or(false) {
+        let _ = dma.clear_done_flag(0);
         rprintln_ts!("Transfer complete!");
 
         // Verify data

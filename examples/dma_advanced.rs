@@ -58,16 +58,16 @@ fn main() -> ! {
     let src_word_aligned = 0x2000_0000u32;
     let dst_packed = 0x2000_0200u32;
 
-    dma.configure_transfer(0, src_word_aligned, dst_packed, 32, &unpack_config);
-    dma.enable_channel(0);
-    dma.start_transfer(0);
+    let _ = dma.configure_transfer(0, src_word_aligned, dst_packed, 32, &unpack_config);
+    let _ = dma.enable_channel(0);
+    let _ = dma.start_transfer(0);
     rprintln_ts!("Channel 0: Unpacking transfer started");
     rprintln_ts!("  Src increment: 4 units (word-aligned)");
     rprintln_ts!("  Dst increment: 1 unit (packed)");
 
     delay.delay_ms(10);
-    if dma.is_transfer_done(0) {
-        dma.clear_done_flag(0);
+    if dma.is_transfer_done(0).unwrap_or(false) {
+        let _ = dma.clear_done_flag(0);
         rprintln_ts!("✓ Unpack transfer complete");
     }
 
@@ -88,21 +88,21 @@ fn main() -> ! {
         .with_block_size(16);
 
     // Channel 1: 32-bit transfers
-    dma.configure_transfer(1, 0x2000_0300u32, 0x2000_0400u32, 64, &config_ch1);
-    dma.enable_channel(1);
-    dma.start_transfer(1);
+    let _ = dma.configure_transfer(1, 0x2000_0300u32, 0x2000_0400u32, 64, &config_ch1);
+    let _ = dma.enable_channel(1);
+    let _ = dma.start_transfer(1);
     rprintln_ts!("Channel 1: Word transfers (32-bit), block size 4");
 
     // Channel 2: 16-bit transfers
-    dma.configure_transfer(2, 0x2000_0500u32, 0x2000_0600u32, 128, &config_ch2);
-    dma.enable_channel(2);
-    dma.start_transfer(2);
+    let _ = dma.configure_transfer(2, 0x2000_0500u32, 0x2000_0600u32, 128, &config_ch2);
+    let _ = dma.enable_channel(2);
+    let _ = dma.start_transfer(2);
     rprintln_ts!("Channel 2: HalfWord transfers (16-bit), block size 8");
 
     // Channel 3: 8-bit transfers
-    dma.configure_transfer(3, 0x2000_0700u32, 0x2000_0800u32, 256, &config_ch3);
-    dma.enable_channel(3);
-    dma.start_transfer(3);
+    let _ = dma.configure_transfer(3, 0x2000_0700u32, 0x2000_0800u32, 256, &config_ch3);
+    let _ = dma.enable_channel(3);
+    let _ = dma.start_transfer(3);
     rprintln_ts!("Channel 3: Byte transfers (8-bit), block size 16");
 
     // Monitor all channels simultaneously
@@ -113,18 +113,18 @@ fn main() -> ! {
     let mut iteration = 0;
 
     while (!ch1_done || !ch2_done || !ch3_done) && iteration < 1000 {
-        if !ch1_done && dma.is_transfer_done(1) {
-            dma.clear_done_flag(1);
+        if !ch1_done && dma.is_transfer_done(1).unwrap_or(false) {
+            let _ = dma.clear_done_flag(1);
             ch1_done = true;
             rprintln_ts!("  ✓ Channel 1 complete");
         }
-        if !ch2_done && dma.is_transfer_done(2) {
-            dma.clear_done_flag(2);
+        if !ch2_done && dma.is_transfer_done(2).unwrap_or(false) {
+            let _ = dma.clear_done_flag(2);
             ch2_done = true;
             rprintln_ts!("  ✓ Channel 2 complete");
         }
-        if !ch3_done && dma.is_transfer_done(3) {
-            dma.clear_done_flag(3);
+        if !ch3_done && dma.is_transfer_done(3).unwrap_or(false) {
+            let _ = dma.clear_done_flag(3);
             ch3_done = true;
             rprintln_ts!("  ✓ Channel 3 complete");
         }
@@ -155,15 +155,15 @@ fn main() -> ! {
 
         if idx < 4 {
             let ch = idx as u8;
-            dma.configure_transfer(
+            let _ = dma.configure_transfer(
                 ch,
                 0x2000_1000u32 + (idx as u32 * 0x100),
                 0x2000_2000u32 + (idx as u32 * 0x100),
                 32,
                 &config,
             );
-            dma.enable_channel(ch);
-            dma.start_transfer(ch);
+            let _ = dma.enable_channel(ch);
+            let _ = dma.start_transfer(ch);
         }
     }
 
@@ -174,8 +174,8 @@ fn main() -> ! {
     // Wait for first 4 channels
     delay.delay_ms(50);
     for ch in 0..4 {
-        if dma.is_transfer_done(ch) {
-            dma.clear_done_flag(ch);
+        if dma.is_transfer_done(ch).unwrap_or(false) {
+            let _ = dma.clear_done_flag(ch);
         }
     }
 
@@ -219,15 +219,15 @@ fn main() -> ! {
     let config = DmaConfig::default().with_size(DmaSize::Word);
 
     for (i, &ch) in channels.iter().enumerate() {
-        dma.configure_transfer(
+        let _ = dma.configure_transfer(
             ch,
             0x2000_3000u32 + (i as u32 * 0x100),
             0x2000_4000u32 + (i as u32 * 0x100),
             16,
             &config,
         );
-        dma.enable_channel(ch);
-        dma.start_transfer(ch);
+        let _ = dma.enable_channel(ch);
+        let _ = dma.start_transfer(ch);
     }
 
     rprintln_ts!("All channels started simultaneously");
@@ -248,8 +248,8 @@ fn main() -> ! {
 
     // Clear all done flags
     for &ch in channels.iter() {
-        if dma.is_transfer_done(ch) {
-            dma.clear_done_flag(ch);
+        if dma.is_transfer_done(ch).unwrap_or(false) {
+            let _ = dma.clear_done_flag(ch);
         }
     }
 

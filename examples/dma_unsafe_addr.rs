@@ -56,18 +56,18 @@ fn main() -> ! {
     let mut dma = Dma::new();
 
     // Use address-based API (unsafe - you validate correctness)
-    dma.copy_addr(0, src_addr, dst_addr, copy_size);
+    let _ = dma.copy_addr(0, src_addr, dst_addr, copy_size);
     rprintln_ts!("DMA transfer started: {} bytes", copy_size);
 
     // Poll with timeout
     let mut timeout = 0;
-    while !dma.is_transfer_done(0) && timeout < 10000 {
+    while !dma.is_transfer_done(0).unwrap_or(false) && timeout < 10000 {
         timeout += 1;
         delay.delay_us(10);
     }
 
-    if dma.is_transfer_done(0) {
-        dma.clear_done_flag(0);
+    if dma.is_transfer_done(0).unwrap_or(false) {
+        let _ = dma.clear_done_flag(0);
         rprintln_ts!("✓ Transfer complete!");
     } else {
         rprintln_ts!("✗ Transfer timeout!");
@@ -81,13 +81,13 @@ fn main() -> ! {
     let buffer_addr = &rx_buffer[0] as *const u8 as u32;
 
     // When you know the exact I2C0 RXDATA register address
-    dma.i2c0_rx_addr(1, buffer_addr, 32);
+    let _ = dma.i2c0_rx_addr(1, buffer_addr, 32);
     rprintln_ts!("I2C0 RX configured on channel 1");
     rprintln_ts!("Waiting for I2C0 to request data...");
 
     // Timeout after 100ms
     timeout = 0;
-    while !dma.is_transfer_done(1) && timeout < 1000 {
+    while !dma.is_transfer_done(1).unwrap_or(false) && timeout < 1000 {
         timeout += 1;
         delay.delay_ms(1);
     }
@@ -117,20 +117,20 @@ fn main() -> ! {
     // Using custom config with address-based transfer
     let custom_src = 0x2000_0200u32;
     let custom_dst = 0x2000_0300u32;
-    dma.configure_transfer(2, custom_src, custom_dst, 16, &config);
-    dma.enable_channel(2);
-    dma.start_transfer(2);
+    let _ = dma.configure_transfer(2, custom_src, custom_dst, 16, &config);
+    let _ = dma.enable_channel(2);
+    let _ = dma.start_transfer(2);
     rprintln_ts!("Custom transfer started on channel 2");
 
     // Wait for completion
     timeout = 0;
-    while !dma.is_transfer_done(2) && timeout < 10000 {
+    while !dma.is_transfer_done(2).unwrap_or(false) && timeout < 10000 {
         timeout += 1;
         delay.delay_us(10);
     }
 
-    if dma.is_transfer_done(2) {
-        dma.clear_done_flag(2);
+    if dma.is_transfer_done(2).unwrap_or(false) {
+        let _ = dma.clear_done_flag(2);
         rprintln_ts!("✓ Custom transfer complete!");
     } else {
         rprintln_ts!("✗ Custom transfer timeout!");
