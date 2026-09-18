@@ -101,3 +101,15 @@ path = "examples/i2c_dma.rs"
 [[example]]
 name = "dma_m2m"
 path = "examples/dma_m2m.rs"
+
+[[example]]
+name = "dma_unsafe_addr"
+path = "examples/dma_unsafe_addr.rs"
+
+[[example]]
+name = "dma_advanced"
+path = "examples/dma_advanced.rs"
+
+[[example]]
+name = "dma_peripherals"
+path = "examples/dma_peripherals.rs"
