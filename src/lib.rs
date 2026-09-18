@@ -40,6 +40,7 @@ use pins::GpioPin;
 
 pub mod clock;
 pub mod delay;
+pub mod dma;
 pub mod gpio;
 pub mod i2c;
 pub mod interrupt;
@@ -94,6 +95,9 @@ pub struct CpuConfig {
     /// Enables I2C0 and I2C1 clocks.
     pub i2c_clock: bool,
 
+    /// Enables LDMA (Linked DMA) clock.
+    pub ldma_clock: bool,
+
     /// Retunes SYSCLK to this speed. `None` leaves the reset clock alone,
     /// which is HFRCODPLL's 19 MHz default band.
     pub cpu_speed: Option<clock::CpuSpeed>,
@@ -105,6 +109,7 @@ impl CpuConfig {
         Self {
             gpio_clock: true,
             i2c_clock: false,
+            ldma_clock: false,
             cpu_speed: None,
         }
     }
@@ -126,6 +131,12 @@ impl CpuConfig {
         self.i2c_clock = enable;
         self
     }
+
+    /// Sets whether [`init`] enables the LDMA clock.
+    pub const fn with_ldma_clock(mut self, enable: bool) -> Self {
+        self.ldma_clock = enable;
+        self
+    }
 }
 
 impl Default for CpuConfig {
@@ -133,6 +144,7 @@ impl Default for CpuConfig {
         Self {
             gpio_clock: true,
             i2c_clock: false,
+            ldma_clock: false,
             cpu_speed: None,
         }
     }
@@ -256,6 +268,15 @@ pub fn init(config: CpuConfig) -> Result<Peripherals, PeripheralsErrors> {
                 w.i2c0().set_bit()
                     .i2c1().set_bit()
             });
+        }
+    }
+
+    if config.ldma_clock {
+        // SAFETY: we hold the one-shot token above, so nothing else is
+        // touching CMU yet.
+        unsafe {
+            let cmu = &*CmuS::ptr();
+            cmu.clken0().modify(|_, w| w.ldma().set_bit());
         }
     }
 
