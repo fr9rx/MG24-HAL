@@ -28,36 +28,6 @@ embedded-hal = "1.0.0"
 mg24-hal-macros = { version = "2.0.0", path = "macros" }
 
 
-[[example]]
-name = "blink"
-path = "examples/blink.rs"
-
-
-[[example]]
-name = "button"
-path = "examples/button.rs"
-
-
-[[example]]
-name = "open_drain"
-path = "examples/open_drain.rs"
-
-
-[[example]]
-name = "gpio_interrupt"
-path = "examples/gpio_interrupt.rs"
-
-
-[[example]]
-name = "flex"
-path = "examples/flex.rs"
-
-
-[[example]]
-name = "cpu_speed"
-path = "examples/cpu_speed.rs"
-
-
 [profile.release]
 # One codegen unit plus LTO lets the optimiser see across crate boundaries,
 # which matters here: the pin identity is a runtime `AnyPin`, and constant
@@ -76,41 +46,3 @@ default = ["panic-handler"]
 # Provides the `#[panic_handler]`. Turn this off to supply your own, or to use
 # something like `panic-probe`.
 panic-handler = []
-
-
-[[example]]
-name = "logging"
-path = "examples/logging.rs"
-
-
-[[example]]
-name = "i2c"
-path = "examples/i2c.rs"
-
-[[example]]
-name = "i2c_scan"
-path = "examples/i2c_scan.rs"
-
-[[example]]
-name = "i2c_scan_full"
-path = "examples/i2c_scan_full.rs"
-
-[[example]]
-name = "i2c_dma"
-path = "examples/i2c_dma.rs"
-
-[[example]]
-name = "dma_m2m"
-path = "examples/dma_m2m.rs"
-
-[[example]]
-name = "dma_unsafe_addr"
-path = "examples/dma_unsafe_addr.rs"
-
-[[example]]
-name = "dma_advanced"
-path = "examples/dma_advanced.rs"
-
-[[example]]
-name = "dma_peripherals"
-path = "examples/dma_peripherals.rs"

@@ -1,0 +1,16 @@
+[package]
+name = "mg24-hal-example-blink"
+version = "2.0.0"
+edition = "2021"
+description = "blink example for mg24-hal"
+publish = false
+
+[dependencies]
+mg24-hal = { version = "2.0.0", path = "../.." }
+
+[profile.release]
+codegen-units = 1
+lto = true
+debug = true
+
+[workspace]

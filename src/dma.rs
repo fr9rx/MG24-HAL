@@ -358,31 +358,31 @@ impl Dma {
     /// Alias for `copy_addr()` - for backward compatibility
     #[deprecated(since = "2.1.0", note = "use `copy_slice()` or `copy_addr()` instead")]
     pub fn copy(&mut self, channel: u8, src: u32, dst: u32, count: u16) {
-        let _ = self.copy_addr(channel, src, dst, count);
+        self.copy_addr(channel, src, dst, count).ok();
     }
 
     /// Alias for `i2c0_rx_addr()` - for backward compatibility
     #[deprecated(since = "2.1.0", note = "use `i2c0_rx_slice()` or `i2c0_rx_addr()` instead")]
     pub fn i2c0_rx(&mut self, channel: u8, dst: u32, count: u16) {
-        let _ = self.i2c0_rx_addr(channel, dst, count);
+        self.i2c0_rx_addr(channel, dst, count).ok();
     }
 
     /// Alias for `i2c0_tx_addr()` - for backward compatibility
     #[deprecated(since = "2.1.0", note = "use `i2c0_tx_slice()` or `i2c0_tx_addr()` instead")]
     pub fn i2c0_tx(&mut self, channel: u8, src: u32, count: u16) {
-        let _ = self.i2c0_tx_addr(channel, src, count);
+        self.i2c0_tx_addr(channel, src, count).ok();
     }
 
     /// Alias for `i2c1_rx_addr()` - for backward compatibility
     #[deprecated(since = "2.1.0", note = "use `i2c1_rx_slice()` or `i2c1_rx_addr()` instead")]
     pub fn i2c1_rx(&mut self, channel: u8, dst: u32, count: u16) {
-        let _ = self.i2c1_rx_addr(channel, dst, count);
+        self.i2c1_rx_addr(channel, dst, count).ok();
     }
 
     /// Alias for `i2c1_tx_addr()` - for backward compatibility
     #[deprecated(since = "2.1.0", note = "use `i2c1_tx_slice()` or `i2c1_tx_addr()` instead")]
     pub fn i2c1_tx(&mut self, channel: u8, src: u32, count: u16) {
-        let _ = self.i2c1_tx_addr(channel, src, count);
+        self.i2c1_tx_addr(channel, src, count).ok();
     }
 
     /// Configure channel peripheral request source

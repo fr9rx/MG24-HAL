@@ -155,13 +155,13 @@ fn main() -> ! {
 
         if idx < 4 {
             let ch = idx as u8;
-            let _ = dma.configure_transfer(
+            dma.configure_transfer(
                 ch,
                 0x2000_1000u32 + (idx as u32 * 0x100),
                 0x2000_2000u32 + (idx as u32 * 0x100),
                 32,
                 &config,
-            );
+            ).ok();
             dma.enable_channel(ch).ok();
             dma.start_transfer(ch).ok();
         }
@@ -219,13 +219,13 @@ fn main() -> ! {
     let config = DmaConfig::default().with_size(DmaSize::Word);
 
     for (i, &ch) in channels.iter().enumerate() {
-        let _ = dma.configure_transfer(
+        dma.configure_transfer(
             ch,
             0x2000_3000u32 + (i as u32 * 0x100),
             0x2000_4000u32 + (i as u32 * 0x100),
             16,
             &config,
-        );
+        ).ok();
         dma.enable_channel(ch).ok();
         dma.start_transfer(ch).ok();
     }

@@ -227,8 +227,7 @@ impl fmt::Write for Terminal {
 /// Writes pre-formatted arguments. The macros below are the usual way in.
 pub fn write_fmt(args: fmt::Arguments<'_>) {
     use fmt::Write;
-    // `Terminal`'s `write_str` cannot fail, so there is nothing to handle.
-    let _ = Terminal.write_fmt(args);
+    Terminal.write_fmt(args).ok();
 }
 
 /// Logs without a trailing newline.
