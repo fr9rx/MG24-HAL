@@ -5,7 +5,6 @@ edition = "2021"
 description = "Procedural macros for mg24-hal - main entry point and interrupt handler attributes"
 license = "MIT"
 repository = "https://github.com/fr9rx/mg24-hal"
-readme = "README.md"
 keywords = ["embedded", "hal", "mg24", "macros"]
 categories = ["embedded", "no-std"]
 authors = ["fr9rx"]
