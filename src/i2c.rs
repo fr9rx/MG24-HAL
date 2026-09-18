@@ -119,6 +119,7 @@ impl fmt::Display for I2cError {
 pub struct I2c<'d, T> {
     _sda: AnyPin,
     _scl: AnyPin,
+    #[allow(dead_code)]
     config: I2cConfig,
     _instance: PhantomData<T>,
     _lifetime: PhantomData<&'d ()>,
@@ -233,28 +234,22 @@ impl<'d> I2c<'d, I2c0> {
         let i2c = unsafe { &*I2c0S::ptr() };
 
         // Issue START command first
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for START to be transmitted (state 0x67)
         self.wait_for_state(1_000_000)?;
 
         // Now write address with read bit to TXDATA
-        unsafe {
-            let addr_byte = ((addr as u16) << 1) | 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = ((addr as u16) << 1) | 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
         // Check for NACK
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
@@ -264,26 +259,22 @@ impl<'d> I2c<'d, I2c0> {
 
             if is_last {
                 // NACK the last byte
-                unsafe {
-                    i2c.ctrl().modify(|r, w| w.bits(r.bits() | 0x40));
-                }
+                i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() | 0x40) });
             }
 
             // Wait for data
             self.wait_for_rxdata(1_000_000)?;
 
             // Read byte
-            buffer[i] = unsafe { i2c.rxdata().read().rxdata().bits() };
+            buffer[i] = i2c.rxdata().read().rxdata().bits();
 
             if is_last {
-                unsafe {
-                    i2c.ctrl().modify(|r, w| w.bits(r.bits() & !0x40));
-                }
+                i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() & !0x40) });
             }
         }
 
         // Send STOP
-        unsafe { i2c.cmd().write(|w| w.stop().set_bit()) };
+        i2c.cmd().write(|w| w.stop().set_bit());
         self.wait_for_idle(1_000_000)?;
 
         Ok(())
@@ -299,46 +290,38 @@ impl<'d> I2c<'d, I2c0> {
         let i2c = unsafe { &*I2c0S::ptr() };
 
         // Issue START command first
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for START to be transmitted (state 0x67)
         self.wait_for_state(1_000_000)?;
 
         // Now write address with write bit to TXDATA
-        unsafe {
-            let addr_byte = (addr as u16) << 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = (addr as u16) << 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
         // Write all bytes
         for &byte in buffer {
-            unsafe { i2c.txdata().write(|w| w.txdata().bits(byte)) };
+            i2c.txdata().write(|w| unsafe { w.txdata().bits(byte) });
             self.wait_for_state(1_000_000)?;
 
-            if unsafe { i2c.if_().read().nack().bit() } {
-                unsafe {
-                    i2c.if_().write(|w| w.nack().set_bit());
-                    i2c.cmd().write(|w| w.stop().set_bit());
-                }
+            if i2c.if_().read().nack().bit() {
+                i2c.if_().write(|w| w.nack().set_bit());
+                i2c.cmd().write(|w| w.stop().set_bit());
                 return Err(I2cError::NoAck);
             }
         }
 
         // Send STOP
-        unsafe { i2c.cmd().write(|w| w.stop().set_bit()) };
+        i2c.cmd().write(|w| w.stop().set_bit());
         self.wait_for_idle(1_000_000)?;
 
         Ok(())
@@ -359,66 +342,52 @@ impl<'d> I2c<'d, I2c0> {
         let i2c = unsafe { &*I2c0S::ptr() };
 
         // Issue START command first
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for START to be transmitted (state 0x67)
         self.wait_for_state(1_000_000)?;
 
         // Now write address with write bit to TXDATA
-        unsafe {
-            let addr_byte = (addr as u16) << 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = (addr as u16) << 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
         // Write data
         for &byte in write_buffer {
-            unsafe { i2c.txdata().write(|w| w.txdata().bits(byte)) };
+            i2c.txdata().write(|w| unsafe { w.txdata().bits(byte) });
             self.wait_for_state(1_000_000)?;
 
-            if unsafe { i2c.if_().read().nack().bit() } {
-                unsafe {
-                    i2c.if_().write(|w| w.nack().set_bit());
-                    i2c.cmd().write(|w| w.stop().set_bit());
-                }
+            if i2c.if_().read().nack().bit() {
+                i2c.if_().write(|w| w.nack().set_bit());
+                i2c.cmd().write(|w| w.stop().set_bit());
                 return Err(I2cError::NoAck);
             }
         }
 
         // Send RESTART with read address
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for RESTART to be transmitted
         self.wait_for_state(1_000_000)?;
 
         // Now write address with read bit to TXDATA
-        unsafe {
-            let addr_byte = ((addr as u16) << 1) | 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = ((addr as u16) << 1) | 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
@@ -428,24 +397,20 @@ impl<'d> I2c<'d, I2c0> {
                 let is_last = i == read_buffer.len() - 1;
 
                 if is_last {
-                    unsafe {
-                        i2c.ctrl().modify(|r, w| w.bits(r.bits() | 0x40));
-                    }
+                    i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() | 0x40) });
                 }
 
                 self.wait_for_rxdata(1_000_000)?;
-                read_buffer[i] = unsafe { i2c.rxdata().read().rxdata().bits() };
+                read_buffer[i] = i2c.rxdata().read().rxdata().bits();
 
                 if is_last {
-                    unsafe {
-                        i2c.ctrl().modify(|r, w| w.bits(r.bits() & !0x40));
-                    }
+                    i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() & !0x40) });
                 }
             }
         }
 
         // Send STOP
-        unsafe { i2c.cmd().write(|w| w.stop().set_bit()) };
+        i2c.cmd().write(|w| w.stop().set_bit());
         self.wait_for_idle(1_000_000)?;
 
         Ok(())
@@ -454,7 +419,7 @@ impl<'d> I2c<'d, I2c0> {
     fn wait_for_state(&self, timeout_loops: u32) -> Result<(), I2cError> {
         let i2c = unsafe { &*I2c0S::ptr() };
         for _ in 0..timeout_loops {
-            let state = unsafe { i2c.state().read().bits() };
+            let state = i2c.state().read().bits();
             // Check if STATE (bits [7:5]) == IDLE (0)
             // BUSHOLD bit (4) should also be clear
             if (state & 0xF0) == 0 {
@@ -467,7 +432,7 @@ impl<'d> I2c<'d, I2c0> {
     fn wait_for_rxdata(&self, timeout_loops: u32) -> Result<(), I2cError> {
         let i2c = unsafe { &*I2c0S::ptr() };
         for _ in 0..timeout_loops {
-            let status = unsafe { i2c.status().read().bits() };
+            let status = i2c.status().read().bits();
             // Check RXDATAV flag (bit 8)
             if (status & 0x100) != 0 {
                 return Ok(());
@@ -479,7 +444,7 @@ impl<'d> I2c<'d, I2c0> {
     fn wait_for_idle(&self, timeout_loops: u32) -> Result<(), I2cError> {
         let i2c = unsafe { &*I2c0S::ptr() };
         for _ in 0..timeout_loops {
-            let state = unsafe { i2c.state().read().bits() };
+            let state = i2c.state().read().bits();
             // Check if STATE (bits [7:5]) == IDLE (0) and BUSHOLD (bit 4) is clear
             if (state & 0xF0) == 0 {
                 return Ok(());
@@ -596,27 +561,21 @@ impl<'d> I2c<'d, I2c1> {
         let i2c = unsafe { &*I2c1S::ptr() };
 
         // Issue START command first
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for START to be transmitted (state 0x67)
         self.wait_for_state(1_000_000)?;
 
         // Now write address with read bit to TXDATA
-        unsafe {
-            let addr_byte = ((addr as u16) << 1) | 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = ((addr as u16) << 1) | 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
@@ -624,22 +583,18 @@ impl<'d> I2c<'d, I2c1> {
             let is_last = i == buffer.len() - 1;
 
             if is_last {
-                unsafe {
-                    i2c.ctrl().modify(|r, w| w.bits(r.bits() | 0x40));
-                }
+                i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() | 0x40) });
             }
 
             self.wait_for_rxdata(1_000_000)?;
-            buffer[i] = unsafe { i2c.rxdata().read().rxdata().bits() };
+            buffer[i] = i2c.rxdata().read().rxdata().bits();
 
             if is_last {
-                unsafe {
-                    i2c.ctrl().modify(|r, w| w.bits(r.bits() & !0x40));
-                }
+                i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() & !0x40) });
             }
         }
 
-        unsafe { i2c.cmd().write(|w| w.stop().set_bit()) };
+        i2c.cmd().write(|w| w.stop().set_bit());
         self.wait_for_idle(1_000_000)?;
 
         Ok(())
@@ -655,44 +610,36 @@ impl<'d> I2c<'d, I2c1> {
         let i2c = unsafe { &*I2c1S::ptr() };
 
         // Issue START command first
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for START to be transmitted (state 0x67)
         self.wait_for_state(1_000_000)?;
 
         // Now write address with write bit to TXDATA
-        unsafe {
-            let addr_byte = (addr as u16) << 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = (addr as u16) << 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
         for &byte in buffer {
-            unsafe { i2c.txdata().write(|w| w.txdata().bits(byte)) };
+            i2c.txdata().write(|w| unsafe { w.txdata().bits(byte) });
             self.wait_for_state(1_000_000)?;
 
-            if unsafe { i2c.if_().read().nack().bit() } {
-                unsafe {
-                    i2c.if_().write(|w| w.nack().set_bit());
-                    i2c.cmd().write(|w| w.stop().set_bit());
-                }
+            if i2c.if_().read().nack().bit() {
+                i2c.if_().write(|w| w.nack().set_bit());
+                i2c.cmd().write(|w| w.stop().set_bit());
                 return Err(I2cError::NoAck);
             }
         }
 
-        unsafe { i2c.cmd().write(|w| w.stop().set_bit()) };
+        i2c.cmd().write(|w| w.stop().set_bit());
         self.wait_for_idle(1_000_000)?;
 
         Ok(())
@@ -713,65 +660,51 @@ impl<'d> I2c<'d, I2c1> {
         let i2c = unsafe { &*I2c1S::ptr() };
 
         // Issue START command first
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for START to be transmitted (state 0x67)
         self.wait_for_state(1_000_000)?;
 
         // Now write address with write bit to TXDATA
-        unsafe {
-            let addr_byte = (addr as u16) << 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = (addr as u16) << 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
         for &byte in write_buffer {
-            unsafe { i2c.txdata().write(|w| w.txdata().bits(byte)) };
+            i2c.txdata().write(|w| unsafe { w.txdata().bits(byte) });
             self.wait_for_state(1_000_000)?;
 
-            if unsafe { i2c.if_().read().nack().bit() } {
-                unsafe {
-                    i2c.if_().write(|w| w.nack().set_bit());
-                    i2c.cmd().write(|w| w.stop().set_bit());
-                }
+            if i2c.if_().read().nack().bit() {
+                i2c.if_().write(|w| w.nack().set_bit());
+                i2c.cmd().write(|w| w.stop().set_bit());
                 return Err(I2cError::NoAck);
             }
         }
 
         // Send RESTART with read address
-        unsafe {
-            i2c.cmd().write(|w| w.start().set_bit());
-        }
+        i2c.cmd().write(|w| w.start().set_bit());
 
         // Wait for RESTART to be transmitted
         self.wait_for_state(1_000_000)?;
 
         // Now write address with read bit to TXDATA
-        unsafe {
-            let addr_byte = ((addr as u16) << 1) | 1;
-            i2c.txdata().write(|w| w.txdata().bits(addr_byte as u8));
-        }
+        let addr_byte = ((addr as u16) << 1) | 1;
+        i2c.txdata().write(|w| unsafe { w.txdata().bits(addr_byte as u8) });
 
         // Wait for address transmission and ACK/NACK
         self.wait_for_state(1_000_000)?;
 
-        if unsafe { i2c.if_().read().nack().bit() } {
-            unsafe {
-                i2c.if_().write(|w| w.nack().set_bit());
-                i2c.cmd().write(|w| w.stop().set_bit());
-            }
+        if i2c.if_().read().nack().bit() {
+            i2c.if_().write(|w| w.nack().set_bit());
+            i2c.cmd().write(|w| w.stop().set_bit());
             return Err(I2cError::NoAck);
         }
 
@@ -780,23 +713,19 @@ impl<'d> I2c<'d, I2c1> {
                 let is_last = i == read_buffer.len() - 1;
 
                 if is_last {
-                    unsafe {
-                        i2c.ctrl().modify(|r, w| w.bits(r.bits() | 0x40));
-                    }
+                    i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() | 0x40) });
                 }
 
                 self.wait_for_rxdata(1_000_000)?;
-                read_buffer[i] = unsafe { i2c.rxdata().read().rxdata().bits() };
+                read_buffer[i] = i2c.rxdata().read().rxdata().bits();
 
                 if is_last {
-                    unsafe {
-                        i2c.ctrl().modify(|r, w| w.bits(r.bits() & !0x40));
-                    }
+                    i2c.ctrl().modify(|r, w| unsafe { w.bits(r.bits() & !0x40) });
                 }
             }
         }
 
-        unsafe { i2c.cmd().write(|w| w.stop().set_bit()) };
+        i2c.cmd().write(|w| w.stop().set_bit());
         self.wait_for_idle(1_000_000)?;
 
         Ok(())
