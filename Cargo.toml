@@ -85,3 +85,7 @@ path = "examples/logging.rs"
 [[example]]
 name = "i2c"
 path = "examples/i2c.rs"
+
+[[example]]
+name = "i2c_scan"
+path = "examples/i2c_scan.rs"
