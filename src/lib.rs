@@ -41,6 +41,7 @@ use pins::GpioPin;
 pub mod clock;
 pub mod delay;
 pub mod gpio;
+pub mod i2c;
 pub mod interrupt;
 pub mod pins;
 pub mod rt;
@@ -89,6 +90,9 @@ pub struct CpuConfig {
     /// as zero and writes are dropped.
     pub gpio_clock: bool,
 
+    /// Enables I2C0 and I2C1 clocks.
+    pub i2c_clock: bool,
+
     /// Retunes SYSCLK to this speed. `None` leaves the reset clock alone,
     /// which is HFRCODPLL's 19 MHz default band.
     pub cpu_speed: Option<clock::CpuSpeed>,
@@ -99,6 +103,7 @@ impl CpuConfig {
     pub const fn new() -> Self {
         Self {
             gpio_clock: true,
+            i2c_clock: false,
             cpu_speed: None,
         }
     }
@@ -114,11 +119,21 @@ impl CpuConfig {
         self.gpio_clock = enable;
         self
     }
+
+    /// Sets whether [`init`] enables the I2C clocks.
+    pub const fn with_i2c_clock(mut self, enable: bool) -> Self {
+        self.i2c_clock = enable;
+        self
+    }
 }
 
 impl Default for CpuConfig {
     fn default() -> Self {
-        Self::new()
+        Self {
+            gpio_clock: true,
+            i2c_clock: false,
+            cpu_speed: None,
+        }
     }
 }
 
@@ -228,6 +243,18 @@ pub fn init(config: CpuConfig) -> Result<Peripherals, PeripheralsErrors> {
         unsafe {
             let cmu = &*CmuS::ptr();
             cmu.clken0().modify(|_, w| w.gpio().set_bit());
+        }
+    }
+
+    if config.i2c_clock {
+        // SAFETY: we hold the one-shot token above, so nothing else is
+        // touching CMU yet.
+        unsafe {
+            let cmu = &*CmuS::ptr();
+            cmu.clken0().modify(|_, w| {
+                w.i2c0().set_bit()
+                    .i2c1().set_bit()
+            });
         }
     }
 

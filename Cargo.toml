@@ -80,3 +80,8 @@ panic-handler = []
 [[example]]
 name = "logging"
 path = "examples/logging.rs"
+
+
+[[example]]
+name = "i2c"
+path = "examples/i2c.rs"
