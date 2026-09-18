@@ -1,58 +1,60 @@
-# DMA Quick Start Guide - One-Liner Operations
+# DMA Quick Start Guide - Safe One-Liner Operations
 
-The DMA API has been streamlined for common operations. Most transfers can now be configured in **2-3 lines** of code.
+The DMA API has been streamlined for common operations. Most transfers can now be configured in **2-3 lines** of code with **zero unsafe pointer casts**.
 
-## Memory-to-Memory Copy
+## Safe API (Recommended)
 
-**One-liner:**
+Pass references directly - the API extracts addresses safely:
+
+### Memory-to-Memory Copy
+
+**One-liner (Safe):**
 ```rust
-dma.copy(0, src_addr, dst_addr, 256);  // Copy 256 bytes
-while !dma.is_transfer_done(0) {}       // Wait for completion
-```
-
-**Full example:**
-```rust
-let mut dma = Dma::new();
-let src_addr = &src_data[0] as *const u8 as u32;
-let dst_addr = &mut dst_buffer[0] as *mut u8 as u32;
-
-dma.copy(0, src_addr, dst_addr, 16);
-while !dma.is_transfer_done(0) {}
-dma.clear_done_flag(0);
-```
-
-## I2C0 Receive (DMA)
-
-**One-liner:**
-```rust
-dma.i2c0_rx(0, &mut rx_buffer[0] as *mut u8 as u32, 32);
+dma.copy_slice(0, &src_data, &mut dst_buffer);  // No pointer casting!
 while !dma.is_transfer_done(0) {}
 ```
 
-No need to configure request source, transfer size, or increments—all handled automatically.
+### I2C0 Receive
 
-## I2C0 Transmit (DMA)
-
-**One-liner:**
+**One-liner (Safe):**
 ```rust
-dma.i2c0_tx(0, &tx_buffer[0] as *const u8 as u32, 32);
+dma.i2c0_rx_slice(0, &mut rx_buffer);
 while !dma.is_transfer_done(0) {}
 ```
 
-## I2C1 Receive (DMA)
+### I2C0 Transmit
 
-**One-liner:**
+**One-liner (Safe):**
 ```rust
-dma.i2c1_rx(0, &mut rx_buffer[0] as *mut u8 as u32, 32);
+dma.i2c0_tx_slice(0, &tx_buffer);
 while !dma.is_transfer_done(0) {}
 ```
 
-## I2C1 Transmit (DMA)
+### I2C1 Receive
 
-**One-liner:**
+**One-liner (Safe):**
 ```rust
-dma.i2c1_tx(0, &tx_buffer[0] as *const u8 as u32, 32);
+dma.i2c1_rx_slice(0, &mut rx_buffer);
 while !dma.is_transfer_done(0) {}
+```
+
+### I2C1 Transmit
+
+**One-liner (Safe):**
+```rust
+dma.i2c1_tx_slice(0, &tx_buffer);
+while !dma.is_transfer_done(0) {}
+```
+
+## Address-Based API (When Needed)
+
+If you already have raw addresses or need advanced control:
+
+```rust
+// Use _addr variants when you have pointers
+dma.copy_addr(0, src_addr, dst_addr, 256);
+dma.i2c0_rx_addr(0, dst_addr, 32);
+dma.i2c0_tx_addr(0, src_addr, 32);
 ```
 
 ## Complete Example: Memory-to-Memory Transfer
@@ -74,8 +76,8 @@ fn main() -> ! {
     let mut dst_buffer = [0u8; 16];
     let mut dma = Dma::new();
 
-    // ONE-LINER: Copy 16 bytes via DMA
-    dma.copy(0, &src_data[0] as *const u8 as u32, &mut dst_buffer[0] as *mut u8 as u32, 16);
+    // ONE-LINER: Safe API - no pointer casting needed!
+    dma.copy_slice(0, &src_data, &mut dst_buffer);
     
     // Wait and verify
     while !dma.is_transfer_done(0) { delay.delay_us(100); }
@@ -87,7 +89,7 @@ fn main() -> ! {
 
 ## Comparison: Before vs After
 
-### Before (Complex)
+### Before (6-7 lines with boilerplate)
 ```rust
 let dma_config = DmaConfig::default()
     .with_channel(0)
@@ -101,28 +103,57 @@ dma.configure_transfer(0, 0x4000_a00C, buf_addr, 32, &dma_config);
 dma.enable_channel(0);
 ```
 
-### After (Simple)
+### After (1 line, safe, no casting)
 ```rust
-dma.i2c0_rx(0, buf_addr, 32);
+dma.i2c0_rx_slice(0, &mut rx_buffer);
 ```
 
 ## Available Quick Methods
 
-All convenience methods follow this pattern:
-
-```
-dma.operation(channel, param1, param2);
-while !dma.is_transfer_done(channel) {}
-dma.clear_done_flag(channel);  // Optional but recommended
-```
+### Safe Methods (Take References - Recommended)
 
 | Method | Parameters | Typical Use |
 |--------|-----------|-------------|
-| `copy()` | ch, src, dst, count | RAM-to-RAM transfers |
-| `i2c0_rx()` | ch, dst, count | I2C0 read via DMA |
-| `i2c0_tx()` | ch, src, count | I2C0 write via DMA |
-| `i2c1_rx()` | ch, dst, count | I2C1 read via DMA |
-| `i2c1_tx()` | ch, src, count | I2C1 write via DMA |
+| `copy_slice()` | ch, &src, &mut dst | RAM-to-RAM transfers |
+| `i2c0_rx_slice()` | ch, &mut dst | I2C0 read via DMA |
+| `i2c0_tx_slice()` | ch, &src | I2C0 write via DMA |
+| `i2c1_rx_slice()` | ch, &mut dst | I2C1 read via DMA |
+| `i2c1_tx_slice()` | ch, &src | I2C1 write via DMA |
+
+### Address Methods (Raw Pointers)
+
+| Method | Parameters | When to Use |
+|--------|-----------|-------------|
+| `copy_addr()` | ch, src_addr, dst_addr, count | Already have addresses |
+| `i2c0_rx_addr()` | ch, dst_addr, count | Advanced use cases |
+| `i2c0_tx_addr()` | ch, src_addr, count | Advanced use cases |
+| `i2c1_rx_addr()` | ch, dst_addr, count | Advanced use cases |
+| `i2c1_tx_addr()` | ch, src_addr, count | Advanced use cases |
+
+All safe methods automatically:
+- Extract addresses from references
+- Determine transfer count from slice length
+- Configure peripheral request sources
+- Set transfer size and increments
+- Enable channels
+
+## Safety Improvements
+
+### Safe API (No Casting)
+```rust
+// Recommended - compiler extracts address safely
+let src_data = [1, 2, 3, 4, 5];
+let mut dst_buffer = [0u8; 5];
+dma.copy_slice(0, &src_data, &mut dst_buffer);
+```
+
+### Address API (When Needed)
+```rust
+// Use only if you have raw addresses from elsewhere
+let src_addr = 0x2000_0000u32;
+let dst_addr = 0x2000_0100u32;
+dma.copy_addr(0, src_addr, dst_addr, 256);
+```
 
 ## Advanced Configuration (Still Available)
 
@@ -142,21 +173,23 @@ dma.start_transfer(0);
 ## Running Examples
 
 ```bash
-# Memory-to-memory transfer
+# Memory-to-memory transfer (safe API)
 cargo build --example dma_m2m
 probe-rs run --chip EFR32MG24B220F1536IM48 target/.../examples/dma_m2m
 
-# I2C0 RX via DMA
+# I2C0 RX via DMA (safe API)
 cargo build --example i2c_dma
 probe-rs run --chip EFR32MG24B220F1536IM48 target/.../examples/i2c_dma
 ```
 
 ## Key Features
 
+✅ **Zero Unsafe Pointer Casts** - Safe references for common operations
 ✅ **Minimal Boilerplate** - Most operations in 1-3 lines
-✅ **Type Safe** - All pointer conversions handled correctly
-✅ **Well Documented** - Inline examples for each method
-✅ **Flexible** - Advanced configuration still available when needed
+✅ **Automatic Configuration** - No need to specify sizes or increments
+✅ **Slice Length Support** - Transfer count derived from slice length
+✅ **Type Safe** - Rust's type system ensures safety
+✅ **Flexible** - Address-based API still available when needed
 ✅ **Verified** - All register writes match reference manual exactly
 
 ## Status Checking
@@ -200,6 +233,18 @@ if timeout >= 1000 {
 - **Peripheral Transfers**: Limited by I2C speed and FIFO depth
 - **Power Efficiency**: LDMA runs independently, CPU can sleep
 - **No CPU Overhead**: Zero interrupts needed for simple polling
+- **Zero Overhead Abstractions**: Safe API compiles to same code as unsafe
+
+## Migration from Old API
+
+Old API still works but is deprecated:
+```rust
+// Old (deprecated but still works)
+dma.copy(0, src_addr, dst_addr, 256);
+
+// New (recommended)
+dma.copy_slice(0, &src_data, &mut dst_buffer);
+```
 
 ## Next Steps
 

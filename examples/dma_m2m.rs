@@ -33,16 +33,13 @@ fn main() -> ! {
     // Destination buffer
     let mut dst_buffer = [0u8; 16];
 
-    let src_addr = &src_data[0] as *const u8 as u32;
-    let dst_addr = &mut dst_buffer[0] as *mut u8 as u32;
-
-    rprintln_ts!("Source:      0x{:08X}", src_addr);
-    rprintln_ts!("Destination: 0x{:08X}", dst_addr);
+    rprintln_ts!("Source:      0x{:08X}", &src_data[0] as *const u8 as u32);
+    rprintln_ts!("Destination: 0x{:08X}", &mut dst_buffer[0] as *mut u8 as u32);
 
     let mut dma = Dma::new();
 
-    // One-liner M2M copy: 16 bytes from src to dst using DMA
-    dma.copy(0, src_addr, dst_addr, 16);
+    // One-liner M2M copy: Safe API accepts references directly
+    dma.copy_slice(0, &src_data, &mut dst_buffer);
     rprintln_ts!("DMA transfer started");
 
     // Wait for completion

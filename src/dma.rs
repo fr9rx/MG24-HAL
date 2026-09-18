@@ -175,15 +175,27 @@ impl Dma {
         Self { _private: () }
     }
 
-    /// Quick memory-to-memory transfer (one line)
+    /// Copy memory with reference (safe, preferred)
     ///
     /// # Example
     ///
     /// ```ignore
-    /// dma.copy(0, src_ptr, dst_ptr, 256);
+    /// dma.copy_slice(0, &src_data, &mut dst_buffer);
     /// while !dma.is_transfer_done(0) {}
     /// ```
-    pub fn copy(&mut self, channel: u8, src: u32, dst: u32, count: u16) {
+    pub fn copy_slice(&mut self, channel: u8, src: &[u8], dst: &mut [u8]) {
+        let count = src.len().min(dst.len()) as u16;
+        let src_addr = src.as_ptr() as u32;
+        let dst_addr = dst.as_mut_ptr() as u32;
+        self.copy_addr(channel, src_addr, dst_addr, count);
+    }
+
+    /// Copy memory with addresses (when you have raw pointers)
+    ///
+    /// # Safety
+    ///
+    /// Addresses must point to valid memory. Source and destination must not overlap.
+    pub fn copy_addr(&mut self, channel: u8, src: u32, dst: u32, count: u16) {
         let config = DmaConfig::default()
             .with_size(DmaSize::Word)
             .with_src_inc(DmaIncrement::One)
@@ -193,17 +205,22 @@ impl Dma {
         self.start_transfer(channel);
     }
 
-    /// Quick I2C RX via DMA (one line)
-    ///
-    /// Configures channel for I2C0 RX and starts transfer
+    /// I2C0 RX via DMA with reference (safe, preferred)
     ///
     /// # Example
     ///
     /// ```ignore
-    /// dma.i2c0_rx(0, &mut buffer[0] as *mut _ as u32, 32);
+    /// dma.i2c0_rx_slice(0, &mut rx_buffer);
     /// while !dma.is_transfer_done(0) {}
     /// ```
-    pub fn i2c0_rx(&mut self, channel: u8, dst: u32, count: u16) {
+    pub fn i2c0_rx_slice(&mut self, channel: u8, dst: &mut [u8]) {
+        let count = dst.len() as u16;
+        let dst_addr = dst.as_mut_ptr() as u32;
+        self.i2c0_rx_addr(channel, dst_addr, count);
+    }
+
+    /// I2C0 RX via DMA with address
+    pub fn i2c0_rx_addr(&mut self, channel: u8, dst: u32, count: u16) {
         let config = DmaConfig::default()
             .with_size(DmaSize::Byte)
             .with_src_inc(DmaIncrement::None)
@@ -213,17 +230,22 @@ impl Dma {
         self.enable_channel(channel);
     }
 
-    /// Quick I2C TX via DMA (one line)
-    ///
-    /// Configures channel for I2C0 TX and starts transfer
+    /// I2C0 TX via DMA with reference (safe, preferred)
     ///
     /// # Example
     ///
     /// ```ignore
-    /// dma.i2c0_tx(0, &buffer[0] as *const _ as u32, 32);
+    /// dma.i2c0_tx_slice(0, &tx_buffer);
     /// while !dma.is_transfer_done(0) {}
     /// ```
-    pub fn i2c0_tx(&mut self, channel: u8, src: u32, count: u16) {
+    pub fn i2c0_tx_slice(&mut self, channel: u8, src: &[u8]) {
+        let count = src.len() as u16;
+        let src_addr = src.as_ptr() as u32;
+        self.i2c0_tx_addr(channel, src_addr, count);
+    }
+
+    /// I2C0 TX via DMA with address
+    pub fn i2c0_tx_addr(&mut self, channel: u8, src: u32, count: u16) {
         let config = DmaConfig::default()
             .with_size(DmaSize::Byte)
             .with_src_inc(DmaIncrement::One)
@@ -233,8 +255,15 @@ impl Dma {
         self.enable_channel(channel);
     }
 
-    /// Quick I2C1 RX via DMA (one line)
-    pub fn i2c1_rx(&mut self, channel: u8, dst: u32, count: u16) {
+    /// I2C1 RX via DMA with reference (safe, preferred)
+    pub fn i2c1_rx_slice(&mut self, channel: u8, dst: &mut [u8]) {
+        let count = dst.len() as u16;
+        let dst_addr = dst.as_mut_ptr() as u32;
+        self.i2c1_rx_addr(channel, dst_addr, count);
+    }
+
+    /// I2C1 RX via DMA with address
+    pub fn i2c1_rx_addr(&mut self, channel: u8, dst: u32, count: u16) {
         let config = DmaConfig::default()
             .with_size(DmaSize::Byte)
             .with_src_inc(DmaIncrement::None)
@@ -244,8 +273,15 @@ impl Dma {
         self.enable_channel(channel);
     }
 
-    /// Quick I2C1 TX via DMA (one line)
-    pub fn i2c1_tx(&mut self, channel: u8, src: u32, count: u16) {
+    /// I2C1 TX via DMA with reference (safe, preferred)
+    pub fn i2c1_tx_slice(&mut self, channel: u8, src: &[u8]) {
+        let count = src.len() as u16;
+        let src_addr = src.as_ptr() as u32;
+        self.i2c1_tx_addr(channel, src_addr, count);
+    }
+
+    /// I2C1 TX via DMA with address
+    pub fn i2c1_tx_addr(&mut self, channel: u8, src: u32, count: u16) {
         let config = DmaConfig::default()
             .with_size(DmaSize::Byte)
             .with_src_inc(DmaIncrement::One)
@@ -253,6 +289,37 @@ impl Dma {
         self.configure_request(channel, DmaRequest::I2c1Tx);
         self.configure_transfer(channel, src, 0x4000_a408, count, &config);
         self.enable_channel(channel);
+    }
+
+    // Keep old simple names as aliases for backward compatibility
+    /// Alias for `copy_addr()` - for backward compatibility
+    #[deprecated(since = "2.1.0", note = "use `copy_slice()` or `copy_addr()` instead")]
+    pub fn copy(&mut self, channel: u8, src: u32, dst: u32, count: u16) {
+        self.copy_addr(channel, src, dst, count);
+    }
+
+    /// Alias for `i2c0_rx_addr()` - for backward compatibility
+    #[deprecated(since = "2.1.0", note = "use `i2c0_rx_slice()` or `i2c0_rx_addr()` instead")]
+    pub fn i2c0_rx(&mut self, channel: u8, dst: u32, count: u16) {
+        self.i2c0_rx_addr(channel, dst, count);
+    }
+
+    /// Alias for `i2c0_tx_addr()` - for backward compatibility
+    #[deprecated(since = "2.1.0", note = "use `i2c0_tx_slice()` or `i2c0_tx_addr()` instead")]
+    pub fn i2c0_tx(&mut self, channel: u8, src: u32, count: u16) {
+        self.i2c0_tx_addr(channel, src, count);
+    }
+
+    /// Alias for `i2c1_rx_addr()` - for backward compatibility
+    #[deprecated(since = "2.1.0", note = "use `i2c1_rx_slice()` or `i2c1_rx_addr()` instead")]
+    pub fn i2c1_rx(&mut self, channel: u8, dst: u32, count: u16) {
+        self.i2c1_rx_addr(channel, dst, count);
+    }
+
+    /// Alias for `i2c1_tx_addr()` - for backward compatibility
+    #[deprecated(since = "2.1.0", note = "use `i2c1_tx_slice()` or `i2c1_tx_addr()` instead")]
+    pub fn i2c1_tx(&mut self, channel: u8, src: u32, count: u16) {
+        self.i2c1_tx_addr(channel, src, count);
     }
 
     /// Configure channel peripheral request source

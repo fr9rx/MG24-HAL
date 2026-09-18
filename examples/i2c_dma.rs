@@ -33,11 +33,10 @@ fn main() -> ! {
     let mut rx_buffer = [0u8; 32];
 
     rprintln_ts!("Testing I2C0 RX via DMA");
-    let buf_addr = &mut rx_buffer[0] as *mut u8 as u32;
-    rprintln_ts!("Buffer: 0x{:08X}", buf_addr);
+    rprintln_ts!("Buffer: 0x{:08X}", &mut rx_buffer[0] as *mut u8 as u32);
 
-    // One-liner I2C0 RX DMA setup
-    dma.i2c0_rx(0, buf_addr, 32);
+    // One-liner I2C0 RX DMA setup - safe API accepts reference directly
+    dma.i2c0_rx_slice(0, &mut rx_buffer);
     rprintln_ts!("DMA channel 0 configured and enabled for I2C0 RX");
 
     // In a real scenario, the peripheral (I2C) would request data
