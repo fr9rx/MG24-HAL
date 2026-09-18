@@ -2,11 +2,13 @@
 name = "mg24-hal-macros"
 version = "2.0.0"
 edition = "2021"
-description = "Procedural macros for mg24-hal"
+description = "Procedural macros for mg24-hal - main entry point and interrupt handler attributes"
 license = "MIT"
 repository = "https://github.com/fr9rx/mg24-hal"
-keywords = ["embedded", "hal", "mg24", "no-std"]
+readme = "README.md"
+keywords = ["embedded", "hal", "mg24", "macros"]
 categories = ["embedded", "no-std"]
+authors = ["fr9rx"]
 
 [lib]
 proc-macro = true

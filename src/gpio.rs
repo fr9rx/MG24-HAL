@@ -28,12 +28,39 @@
 //! Register details follow the EFR32xG24 Reference Manual, chapter 23.
 
 use core::marker::PhantomData;
+use core::fmt;
 
 use crate::interrupt;
 use crate::pins::GpioPin;
 use embedded_hal::digital::{
     ErrorType, InputPin as EhInput, OutputPin as EhOutput, StatefulOutputPin,
 };
+
+/// GPIO operation errors
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GpioError {
+    /// Invalid pin configuration
+    InvalidConfig,
+    /// Pin is not an input
+    NotInput,
+    /// Pin is not an output
+    NotOutput,
+    /// Conflicting configuration
+    ConflictingConfig,
+}
+
+impl fmt::Display for GpioError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            GpioError::InvalidConfig => write!(f, "Invalid GPIO configuration"),
+            GpioError::NotInput => write!(f, "Pin is not configured as input"),
+            GpioError::NotOutput => write!(f, "Pin is not configured as output"),
+            GpioError::ConflictingConfig => write!(f, "Conflicting GPIO configuration"),
+        }
+    }
+}
+
+pub type GpioResult<T> = Result<T, GpioError>;
 
 // --------------------------------------------------------------------------
 // Raw addresses for the bit-access aliases.

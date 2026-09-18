@@ -4,13 +4,14 @@ members = ["macros"]
 [package]
 name = "mg24-hal"
 version = "2.0.0"
-edition = "2024"
-description = "HAL for Silicon Labs MG24 microcontroller"
+edition = "2021"
+description = "HAL for Silicon Labs MG24 microcontroller with DMA, I2C, GPIO, and error handling"
 license = "MIT"
 repository = "https://github.com/fr9rx/mg24-hal"
 readme = "README.md"
 keywords = ["embedded", "hal", "mg24", "no-std"]
 categories = ["embedded", "no-std"]
+authors = ["fr9rx"]
 
 [lib]
 bench = false

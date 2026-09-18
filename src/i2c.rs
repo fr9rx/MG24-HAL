@@ -27,7 +27,11 @@
 //! Register details follow the EFR32xG24 Reference Manual, chapter 21.
 
 use core::marker::PhantomData;
+use core::fmt;
 use efr32mg24_pac::{I2c0S, I2c1S};
+
+pub type I2cResult<T> = Result<T, I2cError>;
+use embedded_hal::i2c;
 
 use crate::gpio::{AnyPin, Pin};
 
@@ -98,6 +102,19 @@ pub enum I2cError {
     InvalidAddress,
 }
 
+impl fmt::Display for I2cError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            I2cError::ArbitrationLost => write!(f, "Bus arbitration lost"),
+            I2cError::NoAck => write!(f, "NACK received from slave"),
+            I2cError::BusError => write!(f, "Bus error detected"),
+            I2cError::BusHeld => write!(f, "Bus held by another device"),
+            I2cError::Timeout => write!(f, "Timeout waiting for operation"),
+            I2cError::InvalidAddress => write!(f, "Invalid I2C address"),
+        }
+    }
+}
+
 /// I2C driver for leader mode (master).
 pub struct I2c<'d, T> {
     _sda: AnyPin,
@@ -134,7 +151,7 @@ impl<'d> I2c<'d, I2c0> {
     }
 
     /// Configure GPIO pins for I2C0: PC4 (SDA) and PC5 (SCL)
-    unsafe fn configure_pins(sda: &AnyPin, scl: &AnyPin) {
+    unsafe fn configure_pins(_sda: &AnyPin, _scl: &AnyPin) { unsafe {
         let gpio = &*efr32mg24_pac::GpioS::ptr();
 
         // Configure GPIO pins for open-drain with pull-up (WIREDANDPULLUP = 0xA)
@@ -170,9 +187,9 @@ impl<'d> I2c<'d, I2c0> {
         // Configure SCL: Port C (0x02), Pin 5
         // (0x02 << 6) | 5 = 0x85
         gpio.i2c0_sclroute().write(|w| w.bits(0x85));
-    }
+    }}
 
-    unsafe fn init_peripheral(config: &I2cConfig) {
+    unsafe fn init_peripheral(config: &I2cConfig) { unsafe {
         let i2c = &*I2c0S::ptr();
 
         // First, write to the IEN register to ensure no interrupts are enabled initially
@@ -200,12 +217,17 @@ impl<'d> I2c<'d, I2c0> {
 
         // Clear any pending interrupt flags
         i2c.if_().write(|w| w.bits(0xFFFF));
-    }
+    }}
 
     /// Read bytes from a slave device (leader read operation).
     pub fn read(&mut self, addr: u8, buffer: &mut [u8]) -> Result<(), I2cError> {
         if buffer.is_empty() {
             return Ok(());
+        }
+
+        // Validate I2C address (7-bit addressing mode)
+        if addr >= 0x80 {
+            return Err(I2cError::InvalidAddress);
         }
 
         let i2c = unsafe { &*I2c0S::ptr() };
@@ -269,6 +291,11 @@ impl<'d> I2c<'d, I2c0> {
 
     /// Write bytes to a slave device (leader write operation).
     pub fn write(&mut self, addr: u8, buffer: &[u8]) -> Result<(), I2cError> {
+        // Validate I2C address (7-bit addressing mode)
+        if addr >= 0x80 {
+            return Err(I2cError::InvalidAddress);
+        }
+
         let i2c = unsafe { &*I2c0S::ptr() };
 
         // Issue START command first
@@ -324,6 +351,11 @@ impl<'d> I2c<'d, I2c0> {
         write_buffer: &[u8],
         read_buffer: &mut [u8],
     ) -> Result<(), I2cError> {
+        // Validate I2C address (7-bit addressing mode)
+        if addr >= 0x80 {
+            return Err(I2cError::InvalidAddress);
+        }
+
         let i2c = unsafe { &*I2c0S::ptr() };
 
         // Issue START command first
@@ -482,7 +514,7 @@ impl<'d> I2c<'d, I2c1> {
     }
 
     /// Configure GPIO pins for I2C1: PB3 (SDA) and PB2 (SCL)
-    unsafe fn configure_pins(sda: &AnyPin, scl: &AnyPin) {
+    unsafe fn configure_pins(_sda: &AnyPin, _scl: &AnyPin) { unsafe {
         let gpio = &*efr32mg24_pac::GpioS::ptr();
 
         // Configure GPIO pins for open-drain with pull-up (WIREDANDPULLUP = 0xA)
@@ -518,9 +550,9 @@ impl<'d> I2c<'d, I2c1> {
         // Configure SCL: Port B (0x01), Pin 2
         // (0x01 << 6) | 2 = 0x42
         gpio.i2c1_sclroute().write(|w| w.bits(0x42));
-    }
+    }}
 
-    unsafe fn init_peripheral(config: &I2cConfig) {
+    unsafe fn init_peripheral(config: &I2cConfig) { unsafe {
         let i2c = &*I2c1S::ptr();
 
         // First, write to the IEN register to ensure no interrupts are enabled initially
@@ -548,12 +580,17 @@ impl<'d> I2c<'d, I2c1> {
 
         // Clear any pending interrupt flags
         i2c.if_().write(|w| w.bits(0xFFFF));
-    }
+    }}
 
     /// Read bytes from a slave device.
     pub fn read(&mut self, addr: u8, buffer: &mut [u8]) -> Result<(), I2cError> {
         if buffer.is_empty() {
             return Ok(());
+        }
+
+        // Validate I2C address (7-bit addressing mode)
+        if addr >= 0x80 {
+            return Err(I2cError::InvalidAddress);
         }
 
         let i2c = unsafe { &*I2c1S::ptr() };
@@ -610,6 +647,11 @@ impl<'d> I2c<'d, I2c1> {
 
     /// Write bytes to a slave device.
     pub fn write(&mut self, addr: u8, buffer: &[u8]) -> Result<(), I2cError> {
+        // Validate I2C address (7-bit addressing mode)
+        if addr >= 0x80 {
+            return Err(I2cError::InvalidAddress);
+        }
+
         let i2c = unsafe { &*I2c1S::ptr() };
 
         // Issue START command first
@@ -663,6 +705,11 @@ impl<'d> I2c<'d, I2c1> {
         write_buffer: &[u8],
         read_buffer: &mut [u8],
     ) -> Result<(), I2cError> {
+        // Validate I2C address (7-bit addressing mode)
+        if addr >= 0x80 {
+            return Err(I2cError::InvalidAddress);
+        }
+
         let i2c = unsafe { &*I2c1S::ptr() };
 
         // Issue START command first
@@ -792,3 +839,32 @@ impl<'d> I2c<'d, I2c1> {
         Err(I2cError::Timeout)
     }
 }
+
+// ========== embedded-hal trait implementations ==========
+
+// Note: embedded-hal 1.0 I2C blocking traits are still in development.
+// Currently implement ErrorType which is the foundation trait.
+// The driver methods (read, write, write_read) are compatible with
+// the embedded-hal I2C blocking interface once finalized.
+
+impl i2c::Error for I2cError {
+    fn kind(&self) -> i2c::ErrorKind {
+        match self {
+            I2cError::ArbitrationLost => i2c::ErrorKind::ArbitrationLoss,
+            I2cError::NoAck => i2c::ErrorKind::NoAcknowledge(i2c::NoAcknowledgeSource::Address),
+            I2cError::BusError => i2c::ErrorKind::Bus,
+            I2cError::BusHeld => i2c::ErrorKind::Bus,
+            I2cError::Timeout => i2c::ErrorKind::Other,
+            I2cError::InvalidAddress => i2c::ErrorKind::Other,
+        }
+    }
+}
+
+impl i2c::ErrorType for I2c<'_, I2c0> {
+    type Error = I2cError;
+}
+
+impl i2c::ErrorType for I2c<'_, I2c1> {
+    type Error = I2cError;
+}
+
