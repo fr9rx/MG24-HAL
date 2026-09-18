@@ -104,7 +104,7 @@ fn main() -> ! {
     // Setup I2C0 RX on channel 0
     let mut rx_buffer = [0u8; 32];
     rprintln_ts!("\nConfiguring I2C0 RX on channel 0...");
-    let _ = dma.i2c0_rx_slice(0, &mut rx_buffer);
+    dma.i2c0_rx_slice(0, &mut rx_buffer).ok();
     rprintln_ts!("✓ Channel 0: I2C0 RX ready");
     rprintln_ts!("  Waiting for I2C0 to have data...");
 
@@ -164,7 +164,7 @@ fn main() -> ! {
 
     // Setup I2C1 TX on channel 1
     let tx_buffer = [0x12, 0x34, 0x56, 0x78, 0xAB, 0xCD, 0xEF, 0x00];
-    let _ = dma.i2c1_tx_slice(1, &tx_buffer);
+    dma.i2c1_tx_slice(1, &tx_buffer).ok();
     rprintln_ts!("✓ Channel 0: I2C0 RX (waiting for data)");
     rprintln_ts!("✓ Channel 1: I2C1 TX (waiting for TX ready)");
 
@@ -226,11 +226,11 @@ fn main() -> ! {
     } else {
         if dma.is_transfer_done(0).unwrap_or(false) {
             rprintln_ts!("✓ I2C0 RX transfer complete");
-            let _ = dma.clear_done_flag(0);
+            dma.clear_done_flag(0).ok();
         }
         if dma.is_transfer_done(1).unwrap_or(false) {
             rprintln_ts!("✓ I2C1 TX transfer complete");
-            let _ = dma.clear_done_flag(1);
+            dma.clear_done_flag(1).ok();
         }
     }
 

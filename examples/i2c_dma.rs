@@ -36,7 +36,7 @@ fn main() -> ! {
     rprintln_ts!("Buffer: 0x{:08X}", &mut rx_buffer[0] as *mut u8 as u32);
 
     // One-liner I2C0 RX DMA setup - safe API accepts reference directly
-    let _ = dma.i2c0_rx_slice(0, &mut rx_buffer);
+    dma.i2c0_rx_slice(0, &mut rx_buffer).ok();
     rprintln_ts!("DMA channel 0 configured and enabled for I2C0 RX");
 
     // In a real scenario, the peripheral (I2C) would request data
@@ -51,7 +51,7 @@ fn main() -> ! {
 
             if dma.is_transfer_done(0).unwrap_or(false) {
                 rprintln_ts!("DMA transfer completed!");
-                let _ = dma.clear_done_flag(0);
+                dma.clear_done_flag(0).ok();
 
                 // Show first few bytes from buffer
                 rprintln_ts!("RX Buffer (first 8 bytes):");

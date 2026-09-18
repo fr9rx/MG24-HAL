@@ -58,16 +58,16 @@ fn main() -> ! {
     let src_word_aligned = 0x2000_0000u32;
     let dst_packed = 0x2000_0200u32;
 
-    let _ = dma.configure_transfer(0, src_word_aligned, dst_packed, 32, &unpack_config);
-    let _ = dma.enable_channel(0);
-    let _ = dma.start_transfer(0);
+    dma.configure_transfer(0, src_word_aligned, dst_packed, 32, &unpack_config).ok();
+    dma.enable_channel(0).ok();
+    dma.start_transfer(0).ok();
     rprintln_ts!("Channel 0: Unpacking transfer started");
     rprintln_ts!("  Src increment: 4 units (word-aligned)");
     rprintln_ts!("  Dst increment: 1 unit (packed)");
 
     delay.delay_ms(10);
     if dma.is_transfer_done(0).unwrap_or(false) {
-        let _ = dma.clear_done_flag(0);
+        dma.clear_done_flag(0).ok();
         rprintln_ts!("✓ Unpack transfer complete");
     }
 
@@ -88,21 +88,21 @@ fn main() -> ! {
         .with_block_size(16);
 
     // Channel 1: 32-bit transfers
-    let _ = dma.configure_transfer(1, 0x2000_0300u32, 0x2000_0400u32, 64, &config_ch1);
-    let _ = dma.enable_channel(1);
-    let _ = dma.start_transfer(1);
+    dma.configure_transfer(1, 0x2000_0300u32, 0x2000_0400u32, 64, &config_ch1).ok();
+    dma.enable_channel(1).ok();
+    dma.start_transfer(1).ok();
     rprintln_ts!("Channel 1: Word transfers (32-bit), block size 4");
 
     // Channel 2: 16-bit transfers
-    let _ = dma.configure_transfer(2, 0x2000_0500u32, 0x2000_0600u32, 128, &config_ch2);
-    let _ = dma.enable_channel(2);
-    let _ = dma.start_transfer(2);
+    dma.configure_transfer(2, 0x2000_0500u32, 0x2000_0600u32, 128, &config_ch2).ok();
+    dma.enable_channel(2).ok();
+    dma.start_transfer(2).ok();
     rprintln_ts!("Channel 2: HalfWord transfers (16-bit), block size 8");
 
     // Channel 3: 8-bit transfers
-    let _ = dma.configure_transfer(3, 0x2000_0700u32, 0x2000_0800u32, 256, &config_ch3);
-    let _ = dma.enable_channel(3);
-    let _ = dma.start_transfer(3);
+    dma.configure_transfer(3, 0x2000_0700u32, 0x2000_0800u32, 256, &config_ch3).ok();
+    dma.enable_channel(3).ok();
+    dma.start_transfer(3).ok();
     rprintln_ts!("Channel 3: Byte transfers (8-bit), block size 16");
 
     // Monitor all channels simultaneously
@@ -114,17 +114,17 @@ fn main() -> ! {
 
     while (!ch1_done || !ch2_done || !ch3_done) && iteration < 1000 {
         if !ch1_done && dma.is_transfer_done(1).unwrap_or(false) {
-            let _ = dma.clear_done_flag(1);
+            dma.clear_done_flag(1).ok();
             ch1_done = true;
             rprintln_ts!("  ✓ Channel 1 complete");
         }
         if !ch2_done && dma.is_transfer_done(2).unwrap_or(false) {
-            let _ = dma.clear_done_flag(2);
+            dma.clear_done_flag(2).ok();
             ch2_done = true;
             rprintln_ts!("  ✓ Channel 2 complete");
         }
         if !ch3_done && dma.is_transfer_done(3).unwrap_or(false) {
-            let _ = dma.clear_done_flag(3);
+            dma.clear_done_flag(3).ok();
             ch3_done = true;
             rprintln_ts!("  ✓ Channel 3 complete");
         }
@@ -162,8 +162,8 @@ fn main() -> ! {
                 32,
                 &config,
             );
-            let _ = dma.enable_channel(ch);
-            let _ = dma.start_transfer(ch);
+            dma.enable_channel(ch).ok();
+            dma.start_transfer(ch).ok();
         }
     }
 
@@ -175,7 +175,7 @@ fn main() -> ! {
     delay.delay_ms(50);
     for ch in 0..4 {
         if dma.is_transfer_done(ch).unwrap_or(false) {
-            let _ = dma.clear_done_flag(ch);
+            dma.clear_done_flag(ch).ok();
         }
     }
 
@@ -226,8 +226,8 @@ fn main() -> ! {
             16,
             &config,
         );
-        let _ = dma.enable_channel(ch);
-        let _ = dma.start_transfer(ch);
+        dma.enable_channel(ch).ok();
+        dma.start_transfer(ch).ok();
     }
 
     rprintln_ts!("All channels started simultaneously");
@@ -249,7 +249,7 @@ fn main() -> ! {
     // Clear all done flags
     for &ch in channels.iter() {
         if dma.is_transfer_done(ch).unwrap_or(false) {
-            let _ = dma.clear_done_flag(ch);
+            dma.clear_done_flag(ch).ok();
         }
     }
 
