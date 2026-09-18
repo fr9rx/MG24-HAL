@@ -175,6 +175,86 @@ impl Dma {
         Self { _private: () }
     }
 
+    /// Quick memory-to-memory transfer (one line)
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// dma.copy(0, src_ptr, dst_ptr, 256);
+    /// while !dma.is_transfer_done(0) {}
+    /// ```
+    pub fn copy(&mut self, channel: u8, src: u32, dst: u32, count: u16) {
+        let config = DmaConfig::default()
+            .with_size(DmaSize::Word)
+            .with_src_inc(DmaIncrement::One)
+            .with_dst_inc(DmaIncrement::One);
+        self.configure_transfer(channel, src, dst, count, &config);
+        self.enable_channel(channel);
+        self.start_transfer(channel);
+    }
+
+    /// Quick I2C RX via DMA (one line)
+    ///
+    /// Configures channel for I2C0 RX and starts transfer
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// dma.i2c0_rx(0, &mut buffer[0] as *mut _ as u32, 32);
+    /// while !dma.is_transfer_done(0) {}
+    /// ```
+    pub fn i2c0_rx(&mut self, channel: u8, dst: u32, count: u16) {
+        let config = DmaConfig::default()
+            .with_size(DmaSize::Byte)
+            .with_src_inc(DmaIncrement::None)
+            .with_dst_inc(DmaIncrement::One);
+        self.configure_request(channel, DmaRequest::I2c0Rx);
+        self.configure_transfer(channel, 0x4000_a00C, dst, count, &config);
+        self.enable_channel(channel);
+    }
+
+    /// Quick I2C TX via DMA (one line)
+    ///
+    /// Configures channel for I2C0 TX and starts transfer
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// dma.i2c0_tx(0, &buffer[0] as *const _ as u32, 32);
+    /// while !dma.is_transfer_done(0) {}
+    /// ```
+    pub fn i2c0_tx(&mut self, channel: u8, src: u32, count: u16) {
+        let config = DmaConfig::default()
+            .with_size(DmaSize::Byte)
+            .with_src_inc(DmaIncrement::One)
+            .with_dst_inc(DmaIncrement::None);
+        self.configure_request(channel, DmaRequest::I2c0Tx);
+        self.configure_transfer(channel, src, 0x4000_a008, count, &config);
+        self.enable_channel(channel);
+    }
+
+    /// Quick I2C1 RX via DMA (one line)
+    pub fn i2c1_rx(&mut self, channel: u8, dst: u32, count: u16) {
+        let config = DmaConfig::default()
+            .with_size(DmaSize::Byte)
+            .with_src_inc(DmaIncrement::None)
+            .with_dst_inc(DmaIncrement::One);
+        self.configure_request(channel, DmaRequest::I2c1Rx);
+        self.configure_transfer(channel, 0x4000_a40C, dst, count, &config);
+        self.enable_channel(channel);
+    }
+
+    /// Quick I2C1 TX via DMA (one line)
+    pub fn i2c1_tx(&mut self, channel: u8, src: u32, count: u16) {
+        let config = DmaConfig::default()
+            .with_size(DmaSize::Byte)
+            .with_src_inc(DmaIncrement::One)
+            .with_dst_inc(DmaIncrement::None);
+        self.configure_request(channel, DmaRequest::I2c1Tx);
+        self.configure_transfer(channel, src, 0x4000_a408, count, &config);
+        self.enable_channel(channel);
+    }
+
     /// Configure channel peripheral request source
     ///
     /// This sets up the DMA request selection register to connect a channel

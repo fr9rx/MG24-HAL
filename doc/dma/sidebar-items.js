@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DmaIncrement","DmaRequest","DmaSize"],"struct":["Dma","DmaConfig"]};
