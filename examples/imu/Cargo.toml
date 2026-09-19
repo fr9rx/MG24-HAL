@@ -1,0 +1,20 @@
+[workspace]
+
+[package]
+name = "imu"
+version = "0.1.0"
+edition = "2021"
+description = "LSM6DS3 IMU sensor example for XIAO MG24 Sense"
+publish = false
+
+[dependencies]
+mg24-hal = "2.0"
+
+[[bin]]
+name = "imu"
+path = "src/main.rs"
+
+[profile.release]
+codegen-units = 1
+lto = true
+debug = true
