@@ -1,11 +1,13 @@
 [package]
 name = "mg24-generate"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "Generate new mg24-hal projects from template"
+description = "Interactive TUI and CLI project generator for mg24-hal (EFR32MG24 HAL)"
 license = "MIT"
 repository = "https://github.com/fr9rx/mg24-hal"
 authors = ["fr9rx"]
+keywords = ["mg24", "efr32", "embedded", "generator", "tui"]
+categories = ["command-line-utilities", "embedded"]
 
 [[bin]]
 name = "mg24-generate"
@@ -14,3 +16,7 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
 anyhow = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true

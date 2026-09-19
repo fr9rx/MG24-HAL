@@ -1,2 +1,10 @@
-# Override workspace config for this binary tool
-# mg24-generate is a host tool (uses std), not embedded code
+# mg24-generate is a host tool (requires std), not embedded code
+# Override workspace's embedded target configuration
+
+# Build for native platform
+[build]
+# Don't set a target - use host platform default
+
+[alias]
+rb = "build --release"
+rr = "run --release"
