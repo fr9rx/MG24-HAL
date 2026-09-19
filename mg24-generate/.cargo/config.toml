@@ -1,9 +1,8 @@
 # mg24-generate is a host tool (requires std), not embedded code
-# Override workspace's embedded target configuration
+# Explicitly override workspace's embedded target configuration
 
-# Build for native platform
 [build]
-# Don't set a target - use host platform default
+target = "x86_64-pc-windows-msvc"
 
 [alias]
 rb = "build --release"
