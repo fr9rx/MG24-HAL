@@ -1,0 +1,19 @@
+[workspace]
+
+[package]
+name = "quick_i2c_test"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+mg24-hal = "2.0"
+
+[[bin]]
+name = "quick_i2c_test"
+path = "src/main.rs"
+
+[profile.release]
+codegen-units = 1
+lto = true
+debug = true

@@ -1,5 +1,4 @@
 [build]
-# Cortex-M33 with hardware FPU.
 target = "thumbv8m.main-none-eabihf"
 
 [target.thumbv8m.main-none-eabihf]
@@ -8,4 +7,3 @@ runner = "probe-rs run --chip EFR32MG24B220F1536IM48"
 [alias]
 rb = "build --release"
 rr = "run --release"
-size = "size --"
