@@ -42,6 +42,7 @@ mg24-generate dma-project --template dma
 - ✅ Provides .cargo/config.toml with probe-rs runner
 - ✅ Multiple project templates (blank, blink, button, i2c, dma)
 - ✅ Ready to build and flash immediately
+- 🔄 TUI mode (coming soon): Interactive project generation with retro ncurses-style interface
 
 ## Generated Project Structure
 
@@ -91,6 +92,14 @@ probe-rs run --chip EFR32MG24B220F1536IM48 target/thumbv8m.main-none-eabihf/rele
 mg24-generate --help
 ```
 
+## Future Enhancements
+
+A TUI mode with interactive project configuration is planned, featuring a retro ncurses-style interface similar to Linux menuconfig. This will allow users to:
+- Select project name interactively
+- Browse and choose from available templates
+- Preview template descriptions
+- Confirm generation before creating
+
 ---
 
-**Version**: 0.1.0
+**Version**: 0.3.0

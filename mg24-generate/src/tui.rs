@@ -7,14 +7,10 @@ use anyhow::Result;
 use crate::generator;
 
 pub fn run_tui() -> Result<()> {
-    let mut siv = Cursive::try_new_with_backend(cursive::backends::crossterm::Backend::init())?;
-
+    let mut siv = Cursive::new();
     show_welcome(&mut siv);
-
-    while siv.is_running() {
-        siv.step();
-    }
-
+    siv.step();
+    siv.step();
     Ok(())
 }
 

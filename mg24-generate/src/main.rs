@@ -8,7 +8,7 @@ use std::path::PathBuf;
 #[command(name = "mg24-generate")]
 #[command(about = "Project generator for mg24-hal (EFR32MG24)", long_about = None)]
 #[command(author = "fr9rx")]
-#[command(version = "0.2.0")]
+#[command(version = "0.3.0")]
 struct Args {
     /// Project name to create
     name: String,
