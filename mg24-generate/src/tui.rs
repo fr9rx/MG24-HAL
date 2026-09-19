@@ -1,6 +1,6 @@
 use cursive::traits::*;
 use cursive::views::{Dialog, LinearLayout, SelectView, EditView, TextView};
-use cursive::Cursive;
+use cursive::{Cursive, CursiveExt};
 use std::path::PathBuf;
 use anyhow::Result;
 
@@ -9,15 +9,14 @@ use crate::generator;
 pub fn run_tui() -> Result<()> {
     let mut siv = Cursive::new();
     show_welcome(&mut siv);
-    siv.step();
-    siv.step();
+    siv.run();
     Ok(())
 }
 
 fn show_welcome(siv: &mut Cursive) {
     let welcome_text = "\
 ╔════════════════════════════════════════╗
-║  mg24-generate v0.2.0                  ║
+║  mg24-generate v0.3.0                  ║
 ║  Interactive Project Generator         ║
 ║  for mg24-hal (EFR32MG24)              ║
 ╚════════════════════════════════════════╝
@@ -46,11 +45,9 @@ fn show_project_name_dialog(siv: &mut Cursive) {
                     .fixed_width(30))
         )
         .button("Next", |s| {
-            let name = s.call_on_name("project_name", |v: &mut EditView| {
+            if let Some(name) = s.call_on_name("project_name", |v: &mut EditView| {
                 v.get_content()
-            });
-
-            if let Some(name) = name {
+            }) {
                 if !name.is_empty() {
                     let name_copy = name.to_string();
                     s.pop_layer();
@@ -81,35 +78,35 @@ fn show_template_dialog(siv: &mut Cursive, project_name: String) {
         .button("Create", {
             let name = project_name.clone();
             move |s| {
-                let template = s.call_on_name("template_select", |v: &mut SelectView<&str>| {
+                if let Some(template) = s.call_on_name("template_select", |v: &mut SelectView<&str>| {
                     v.selection().map(|t| t.to_string())
-                });
+                }) {
+                    if let Some(template) = template {
+                        let project_path = PathBuf::from(&name);
 
-                if let Some(Some(template)) = template {
-                    let project_path = PathBuf::from(&name);
-
-                    if project_path.exists() {
-                        s.add_layer(Dialog::new()
-                            .title("Error")
-                            .content(TextView::new(
-                                format!("Directory '{}' already exists!", name)
-                            ))
-                            .button("OK", |s| {
-                                s.pop_layer();
-                            }));
-                    } else {
-                        match generator::create_project(&project_path, &template) {
-                            Ok(()) => {
-                                s.pop_layer();
-                                show_success(s, &name, &template);
-                            }
-                            Err(e) => {
-                                s.add_layer(Dialog::new()
-                                    .title("Error")
-                                    .content(TextView::new(format!("Error: {}", e)))
-                                    .button("OK", |s| {
-                                        s.pop_layer();
-                                    }));
+                        if project_path.exists() {
+                            s.add_layer(Dialog::new()
+                                .title("Error")
+                                .content(TextView::new(
+                                    format!("Directory '{}' already exists!", name)
+                                ))
+                                .button("OK", |s| {
+                                    s.pop_layer();
+                                }));
+                        } else {
+                            match generator::create_project(&project_path, &template) {
+                                Ok(()) => {
+                                    s.pop_layer();
+                                    show_success(s, &name, &template);
+                                }
+                                Err(e) => {
+                                    s.add_layer(Dialog::new()
+                                        .title("Error")
+                                        .content(TextView::new(format!("Error: {}", e)))
+                                        .button("OK", |s| {
+                                            s.pop_layer();
+                                        }));
+                                }
                             }
                         }
                     }
@@ -117,7 +114,7 @@ fn show_template_dialog(siv: &mut Cursive, project_name: String) {
             }
         })
         .button("Back", {
-            let name = project_name.clone();
+            let _name = project_name.clone();
             move |s| {
                 s.pop_layer();
                 show_project_name_dialog(s);
