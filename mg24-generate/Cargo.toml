@@ -1,6 +1,6 @@
 [package]
 name = "mg24-generate"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 description = "Interactive TUI and CLI project generator for mg24-hal (EFR32MG24 HAL)"
 license = "MIT"
