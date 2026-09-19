@@ -1,6 +1,6 @@
 [package]
 name = "mg24-generate"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2021"
 description = "Interactive TUI and CLI project generator for mg24-hal (EFR32MG24 HAL)"
 license = "MIT"
@@ -16,7 +16,8 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4.4", features = ["derive"] }
 anyhow = "1.0"
-cursive = { version = "0.20", default-features = false, features = ["pancurses"] }
+ratatui = "0.26"
+crossterm = { version = "0.27", features = ["events"] }
 
 [profile.release]
 opt-level = 3
