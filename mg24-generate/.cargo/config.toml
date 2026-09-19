@@ -1,0 +1,2 @@
+# Override workspace config for this binary tool
+# mg24-generate is a host tool (uses std), not embedded code

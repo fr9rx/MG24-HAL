@@ -1,0 +1,16 @@
+[package]
+name = "mg24-generate"
+version = "0.1.0"
+edition = "2021"
+description = "Generate new mg24-hal projects from template"
+license = "MIT"
+repository = "https://github.com/fr9rx/mg24-hal"
+authors = ["fr9rx"]
+
+[[bin]]
+name = "mg24-generate"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+anyhow = "1.0"

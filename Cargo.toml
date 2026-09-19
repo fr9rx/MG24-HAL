@@ -1,5 +1,5 @@
 [workspace]
-members = ["macros"]
+members = ["macros", "mg24-generate"]
 
 [package]
 name = "mg24-hal"
