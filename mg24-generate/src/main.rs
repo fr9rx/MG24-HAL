@@ -11,23 +11,20 @@ use std::path::PathBuf;
 #[command(author = "fr9rx")]
 #[command(version = "0.4.0")]
 struct Args {
-    /// Project name to create (omit for interactive TUI mode)
+    /// Project name to create (omit or use --interactive for TUI mode)
+    #[arg(value_name = "PROJECT_NAME")]
     name: Option<String>,
 
     /// Template type: blank, blink, button, i2c, dma
     #[arg(short, long, default_value = "blank")]
     template: String,
-
-    /// Launch interactive TUI mode (default if no name provided)
-    #[arg(short, long)]
-    interactive: bool,
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    // Enter interactive TUI if --interactive flag or no name provided
-    if args.interactive || args.name.is_none() {
+    // Enter interactive TUI if no name provided
+    if args.name.is_none() {
         return tui::run_tui();
     }
 
