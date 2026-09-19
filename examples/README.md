@@ -31,8 +31,7 @@ Each example is a complete Cargo project with its own `Cargo.toml`:
 
 ```bash
 cd examples/blink
-cargo build --release
-cargo flash --chip EFR32MG24
+cargo run --release
 ```
 
 ## Available Examples
