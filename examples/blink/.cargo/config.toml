@@ -1,0 +1,17 @@
+[build]
+# Cortex-M33 with hardware FPU.
+target = "thumbv8m.main-none-eabihf"
+
+rustflags = [
+  # mg24-hal's build script drops link.x into OUT_DIR and puts that on the
+  # linker search path, so this is all an application needs.
+  "-C", "link-arg=-Tlink.x",
+]
+
+[target.thumbv8m.main-none-eabihf]
+runner = "probe-rs run --chip EFR32MG24B220F1536IM48"
+
+[alias]
+rb = "build --release"
+rr = "run --release"
+size = "size --"
